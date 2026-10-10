@@ -22,6 +22,12 @@ La aplicación necesita servirse desde un servidor HTTP(S); no abras `index.html
 
 Las librerías QR, escáner y Supabase se cargan desde CDN. La aplicación y los datos locales básicos quedan en caché, pero la primera carga de esas librerías necesita Internet. Para uso offline robusto, deben incorporarse las librerías al proyecto y probarse en los dispositivos concretos.
 
+### Publicar en Netlify
+El archivo `netlify.toml` configura el directorio raíz como sitio estático; no se necesita comando de compilación.
+1. En Netlify, importa `dagner87/almacen_qr_pwa` desde GitHub.
+2. Para probar esta versión, selecciona la rama `dagner87-netlify-deployment` como rama de publicación; Netlify usará la configuración del repositorio.
+3. Abre la URL HTTPS asignada por Netlify y prueba la cámara, que requiere permiso del navegador.
+
 ## Primer uso
 1. Abre **Ubicaciones** → **Crear racks**.
 2. Indica número inicial, cantidad de racks y posiciones por nivel.
