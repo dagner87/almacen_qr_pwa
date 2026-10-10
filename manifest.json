@@ -1,0 +1,10 @@
+{
+  "name": "Almacén QR",
+  "short_name": "Almacén QR",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f4f7f4",
+  "theme_color": "#123b32",
+  "description": "Control de ubicaciones y pallets mediante QR",
+  "icons": []
+}

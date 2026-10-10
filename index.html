@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#123b32"><meta name="description" content="Control de ubicaciones y pallets mediante códigos QR">
+<link rel="manifest" href="manifest.json"><link rel="stylesheet" href="styles.css">
+<title>Almacén QR</title>
+</head>
+<body>
+<header class="topbar"><div><div class="eyebrow">INVENTARIO · WMS LIGERO</div><h1>Almacén QR</h1></div><span id="syncBadge" class="badge">Local</span></header>
+<main>
+<nav class="tabs" aria-label="Secciones">
+<button class="tab active" data-view="dashboard">Inicio</button><button class="tab" data-view="locations">Ubicaciones</button><button class="tab" data-view="pallets">Pallets</button><button class="tab" data-view="scan">Escanear</button><button class="tab" data-view="settings">Datos / Sync</button>
+</nav>
+<section id="dashboard" class="view active">
+<div class="hero"><div><p class="eyebrow">RESUMEN DEL ALMACÉN</p><h2>Encuentra cada caja.</h2><p class="muted">Ubicaciones, pallets mixtos y cantidades en un solo lugar.</p></div><div class="hero-icon">▦</div></div>
+<div class="stats"><article class="stat"><span>Racks</span><strong id="statRacks">0</strong></article><article class="stat"><span>Posiciones</span><strong id="statLocations">0</strong></article><article class="stat"><span>Pallets activos</span><strong id="statPallets">0</strong></article><article class="stat"><span>Cajas registradas</span><strong id="statBoxes">0</strong></article></div>
+<div class="section-head"><h3>Accesos rápidos</h3></div><div class="quick-grid">
+<button class="quick" data-goto="scan"><span>⌗</span><b>Escanear QR</b><small>Consultar o mover un pallet</small></button>
+<button class="quick" data-goto="pallets"><span>＋</span><b>Nuevo pallet</b><small>Registrar cajas y marcas</small></button>
+<button class="quick" data-goto="locations"><span>▤</span><b>Ver ubicaciones</b><small>Buscar por rack y nivel</small></button>
+</div>
+<div class="section-head"><h3>Movimientos recientes</h3><small>Últimos registros</small></div><div id="recent" class="list empty">Todavía no hay movimientos.</div>
+<div class="notice"><b>Recomendación operativa:</b> una posición representa un espacio físico concreto. Si caben tres pallets en un nivel, crea tres posiciones independientes.</div>
+</section>
+<section id="locations" class="view">
+<div class="section-head"><div><p class="eyebrow">ESTRUCTURA FÍSICA</p><h2>Ubicaciones</h2></div><button class="primary" id="addRackBtn">＋ Crear racks</button></div>
+<p class="muted">Formato de ubicación: <b>R01-N02-P03</b> (rack, nivel desde abajo, posición de izquierda a derecha).</p>
+<div class="filters"><input id="locationSearch" placeholder="Buscar R01-N02-P03…" aria-label="Buscar ubicación"><select id="levelFilter"><option value="">Todos los niveles</option><option value="1">Nivel 1</option><option value="2">Nivel 2</option><option value="3">Nivel 3</option><option value="4">Nivel 4</option><option value="5">Nivel 5</option></select></div>
+<div id="locationList" class="list"></div>
+</section>
+<section id="pallets" class="view">
+<div class="section-head"><div><p class="eyebrow">INVENTARIO</p><h2>Pallets</h2></div><button class="primary" id="addPalletBtn">＋ Nuevo pallet</button></div>
+<div class="filters"><input id="palletSearch" placeholder="Buscar ID, marca o mercancía…" aria-label="Buscar pallets"><select id="palletStatusFilter"><option value="">Todos los estados</option><option value="active">Activo</option><option value="empty">Vacío</option><option value="retired">Baja</option></select></div>
+<div id="palletList" class="list"></div>
+</section>
+<section id="scan" class="view">
+<div class="section-head"><div><p class="eyebrow">LECTURA QR</p><h2>Escanear código</h2></div></div>
+<p class="muted">Permite el acceso a la cámara. Si el navegador no admite lectura, escribe el código manualmente.</p>
+<div class="scan-box"><div id="reader"></div><div class="scan-actions"><button class="primary" id="startScan">Activar cámara</button><button class="secondary" id="stopScan">Detener</button></div></div>
+<form id="manualScanForm" class="inline-form"><input id="manualCode" placeholder="Ej. PLT-000001 o R01-N02-P03" required><button class="secondary">Abrir</button></form>
+<div id="scanResult"></div>
+</section>
+<section id="settings" class="view">
+<div class="section-head"><div><p class="eyebrow">CONFIGURACIÓN</p><h2>Datos y sincronización</h2></div></div>
+<div class="panel"><h3>Sincronización entre dispositivos</h3><p>Para compartir los mismos datos entre varios teléfonos, configura un proyecto Supabase. Sin estas credenciales, la aplicación trabaja localmente en este dispositivo.</p>
+<label>Supabase Project URL<input id="supabaseUrl" type="url" placeholder="https://xxxx.supabase.co"></label>
+<label>Supabase anon/public key<input id="supabaseKey" placeholder="Clave pública anon/publishable"></label>
+<div class="button-row"><button class="primary" id="connectSync">Conectar / sincronizar</button><button class="secondary" id="disconnectSync">Usar modo local</button></div>
+<p id="syncMessage" class="muted small">No conectado a Supabase.</p><p class="small muted">Las credenciales se guardan en este navegador. Usa solo la clave pública anon; nunca pongas una service_role key en una PWA.</p></div>
+<div class="panel"><h3>Importar y exportar</h3><p>Haz copias de seguridad o mueve datos manualmente entre dispositivos. La importación reemplaza los datos locales actuales.</p><div class="button-row"><button class="secondary" id="exportData">Exportar copia JSON</button><label class="file-button">Importar JSON<input type="file" id="importFile" accept=".json,application/json" hidden></label><button class="secondary" id="exportCsv">Exportar inventario CSV</button></div></div>
+<div class="panel"><h3>Instalar en iPhone</h3><ol><li>Publica esta carpeta en un hosting HTTPS, por ejemplo GitHub Pages.</li><li>Abre la URL en Safari.</li><li>Pulsa Compartir → Añadir a pantalla de inicio.</li><li>Permite el uso de la cámara al escanear. La cámara requiere HTTPS.</li></ol></div>
+<div class="panel warning"><h3>Nota sobre los datos</h3><p>La versión inicial usa almacenamiento local y sincronización Supabase opcional. Configura Supabase siguiendo el archivo README y el SQL incluido antes de usar varios dispositivos en operaciones reales. Realiza copias de seguridad regularmente.</p></div>
+</section>
+</main>
+<dialog id="rackDialog"><form method="dialog" id="rackForm"><div class="dialog-head"><h2>Crear estructura de racks</h2><button class="icon-btn" value="cancel" aria-label="Cerrar">×</button></div><p class="muted small">Se crearán racks con 5 niveles y posiciones numeradas por nivel. Los códigos ya existentes no se duplican.</p><label>Primer número de rack<input id="rackStart" type="number" min="1" value="1" required></label><label>Cantidad de racks<input id="rackCount" type="number" min="1" max="100" value="20" required></label><label>Posiciones por nivel<input id="positionsPerLevel" type="number" min="1" max="20" value="3" required></label><div class="button-row"><button class="secondary" value="cancel">Cancelar</button><button class="primary" id="createRacks" value="default">Crear ubicaciones</button></div></form></dialog>
+<dialog id="palletDialog"><form id="palletForm"><div class="dialog-head"><h2 id="palletDialogTitle">Nuevo pallet</h2><button type="button" class="icon-btn" data-close="palletDialog">×</button></div><input type="hidden" id="palletId"><label>Ubicación<select id="palletLocation" required></select></label><label>Descripción de la mercancía<input id="palletDescription" placeholder="Ej. cajas de bolsas, percheros, papelería" required></label><label>Marca<input id="palletBrand" placeholder="Ej. Zara, Mango, Massimo Dutti"></label><label>Cantidad de cajas<input id="palletBoxes" type="number" min="0" step="1" value="0" required></label><label>Notas (opcional)<textarea id="palletNotes" rows="2" placeholder="Detalle adicional…"></textarea></label><div class="button-row"><button type="button" class="secondary" id="printPalletQr">Ver / imprimir QR</button><button type="submit" class="primary">Guardar pallet</button></div><div id="palletQrPreview" class="qr-preview"></div></form></dialog>
+<dialog id="qrDialog"><div class="dialog-head"><h2 id="qrTitle">Código QR</h2><button class="icon-btn" data-close="qrDialog">×</button></div><div id="qrContent" class="qr-content"></div><div class="button-row"><button class="secondary" id="printQr">Imprimir etiqueta</button><button class="primary" data-close="qrDialog">Listo</button></div></dialog>
+<div id="toast" role="status" class="toast"></div>
+<footer>Almacén QR · Primera versión · Verifica siempre la ubicación física antes de mover mercancía.</footer>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="app.js"></script>
+</body></html>
