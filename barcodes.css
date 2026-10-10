@@ -1,0 +1,104 @@
+#barcodeDialog {
+  width: min(900px, calc(100% - 24px));
+}
+
+.barcode-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.barcode-label {
+  min-width: 0;
+  min-height: 112px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  text-align: center;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.barcode-label svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 64px;
+}
+
+.barcode-label strong {
+  font-size: 15px;
+  letter-spacing: .5px;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  #barcodeDialog,
+  #barcodeDialog * {
+    visibility: visible !important;
+  }
+
+  #barcodeDialog {
+    position: absolute !important;
+    inset: 0 auto auto 0;
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  #barcodeDialog::backdrop {
+    background: transparent !important;
+  }
+
+  #barcodeDialog .dialog-head,
+  #barcodeDialog p,
+  #barcodeDialog .barcode-controls {
+    display: none !important;
+  }
+
+  #barcodePrintArea {
+    position: static;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4mm;
+    width: 100%;
+    margin: 0;
+  }
+
+  .barcode-label {
+    min-height: 34mm;
+    padding: 3mm;
+    border: .25mm solid #777;
+    border-radius: 0;
+  }
+
+  .barcode-label svg {
+    max-height: 19mm;
+  }
+
+  .barcode-label strong {
+    font-size: 11pt;
+  }
+}

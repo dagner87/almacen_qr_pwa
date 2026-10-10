@@ -5,9 +5,10 @@ PWA en español para gestionar ubicaciones de racks, pallets mixtos, marcas y ca
 ## Funciones incluidas
 - Crear racks con cinco niveles y posiciones múltiples por nivel.
 - Nomenclatura `R01-N02-P03`: rack, nivel contado desde abajo y posición.
+- Generar e imprimir etiquetas de código de barras Code 128 para todas las ubicaciones o por rack.
 - Crear/editar pallets con ID QR, ubicación, descripción, marca, cajas y notas.
 - Generar e imprimir QR de ubicación y pallet.
-- Leer QR con cámara (requiere HTTPS y permiso de cámara) o introducir código manualmente.
+- Leer QR y Code 128 con cámara (requiere HTTPS y permiso de cámara) o introducir código manualmente.
 - Buscar ubicaciones y pallets; mover pallets; registrar movimientos.
 - Exportar inventario CSV y copia completa JSON; importar JSON.
 - Almacenamiento local con IndexedDB y modo PWA básico.
@@ -20,7 +21,7 @@ La aplicación necesita servirse desde un servidor HTTP(S); no abras `index.html
 3. Abre la URL HTTPS en Safari para iPhone o Chrome en Android.
 4. En iPhone: Compartir → Añadir a pantalla de inicio.
 
-Las librerías QR, escáner y Supabase se cargan desde CDN. La aplicación y los datos locales básicos quedan en caché, pero la primera carga de esas librerías necesita Internet. Para uso offline robusto, deben incorporarse las librerías al proyecto y probarse en los dispositivos concretos.
+Las librerías QR, lector, código de barras y Supabase se cargan desde CDN. La aplicación y los datos locales básicos quedan en caché, pero la primera carga de esas librerías necesita Internet. Para uso offline robusto, deben incorporarse las librerías al proyecto y probarse en los dispositivos concretos.
 
 ### Publicar en Netlify
 El archivo `netlify.toml` configura el directorio raíz como sitio estático; no se necesita comando de compilación.
@@ -31,7 +32,7 @@ El archivo `netlify.toml` configura el directorio raíz como sitio estático; no
 ## Primer uso
 1. Abre **Ubicaciones** → **Crear racks**.
 2. Indica número inicial, cantidad de racks y posiciones por nivel.
-3. Imprime la etiqueta QR de cada posición.
+3. En **Ubicaciones**, pulsa **Imprimir códigos**, elige un rack o todos y imprime las etiquetas Code 128 para cada posición.
 4. En **Pallets** crea cada pallet y registra la cantidad total de cajas y la marca.
 5. Imprime la etiqueta del pallet y pégala de forma visible.
 6. Para moverlo, escanea el QR del pallet y pulsa Mover, o búscalo en Pallets.
