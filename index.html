@@ -8,14 +8,14 @@
 </head>
 <body>
 <header class="topbar"><div><div class="eyebrow">INVENTARIO · WMS LIGERO</div><h1>Almacén QR</h1></div><div class="topbar-actions"><span id="syncBadge" class="badge">Sin conexión</span><span id="signedInAs" class="small"></span><button id="signOutBtn" class="secondary" hidden>Cerrar sesión</button></div></header>
-<section id="authGate" class="auth-gate">
+<section id="authGate" class="auth-gate" hidden>
 <div class="panel auth-panel"><p class="eyebrow">ACCESO SEGURO</p><h2>Iniciar sesión</h2><p class="muted small">Ingresa con tu cuenta de usuario del almacén.</p>
 <form id="loginForm"><label>Usuario (correo electrónico)<input id="loginEmail" type="email" autocomplete="username" required></label><label>Contraseña<input id="loginPassword" type="password" autocomplete="current-password" required></label><button class="primary" type="submit">Entrar</button><button id="forgotPasswordBtn" class="auth-link" type="button">Olvidé mi contraseña</button></form>
 <form id="forgotPasswordForm" hidden><p class="muted small">Enviaremos un enlace al correo indicado arriba para restablecer tu contraseña.</p><button class="primary" type="submit">Enviar enlace de recuperación</button><button id="backToLoginBtn" class="auth-link" type="button">Volver al inicio de sesión</button></form>
 <form id="updatePasswordForm" hidden><label>Nueva contraseña<input id="newPassword" type="password" autocomplete="new-password" minlength="6" required></label><label>Confirmar contraseña<input id="confirmPassword" type="password" autocomplete="new-password" minlength="6" required></label><button class="primary" type="submit">Guardar nueva contraseña</button></form>
 <p id="authMessage" class="muted small" role="status">Inicia sesión para acceder al almacén.</p></div>
 </section>
-<main id="appContent" hidden>
+<main id="appContent">
 <nav class="tabs" aria-label="Secciones">
 <button class="tab active" data-view="dashboard">Inicio</button><button class="tab" data-view="locations">Ubicaciones</button><button class="tab" data-view="pallets">Pallets</button><button class="tab" data-view="scan">Escanear</button><button class="tab" data-view="admin" data-role="admin" hidden>Administrar</button><button class="tab" data-view="settings" data-role="admin" hidden>Datos / Sync</button>
 </nav>
