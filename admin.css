@@ -1,0 +1,20 @@
+.auth-gate{max-width:520px;margin:8vh auto;padding:16px}
+.auth-panel{padding:24px}
+.auth-panel h2{margin:0 0 6px}
+.auth-panel form{margin-top:16px}
+.auth-panel[hidden],.auth-gate[hidden],main[hidden]{display:none}
+.topbar-actions{display:flex;align-items:center;gap:10px}
+.topbar-actions .small{color:#e1ebe6}
+.admin-rack{background:#f8faf8;border:1px solid var(--line);border-radius:12px;padding:12px}
+.admin-rack-head,.admin-level-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.admin-level{padding:12px 0;border-top:1px solid var(--line);margin-top:10px}
+.admin-level.inactive{opacity:.7}
+.admin-positions{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.admin-position{display:inline-flex;align-items:center;gap:5px;padding:5px 7px;background:white;border:1px solid var(--line);border-radius:8px;font-size:12px}
+.admin-position .mini{padding:2px 6px}
+.mini.danger{color:#9b2c20;background:#fff4f1;border-color:#f0d2cc}
+.user-role-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(140px,220px);align-items:center;gap:10px;margin:0;padding:10px 0;border-bottom:1px solid var(--line)}
+.user-role-row:last-child{border-bottom:0}
+.user-role-row select{margin:0}
+button:disabled{cursor:not-allowed;opacity:.52}
+@media(max-width:620px){.auth-gate{margin:5vh auto;padding:12px}.auth-panel{padding:18px}.topbar-actions{flex-wrap:wrap;justify-content:flex-end}.user-role-row{grid-template-columns:1fr 135px}}
