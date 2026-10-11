@@ -9,10 +9,9 @@
 <body>
 <header class="topbar"><div><div class="eyebrow">INVENTARIO · WMS LIGERO</div><h1>Almacén QR</h1></div><div class="topbar-actions"><span id="syncBadge" class="badge">Sin conexión</span><span id="signedInAs" class="small"></span><button id="signOutBtn" class="secondary" hidden>Cerrar sesión</button></div></header>
 <section id="authGate" class="auth-gate">
-<div class="panel auth-panel"><p class="eyebrow">ACCESO SEGURO</p><h2>Iniciar sesión</h2><p class="muted small">Usa una cuenta creada por el administrador en Supabase.</p>
-<form id="connectionForm"><label>Supabase Project URL<input id="supabaseUrl" type="url" placeholder="https://xxxx.supabase.co" autocomplete="url" required></label><label>Clave pública anon/publishable<input id="supabaseKey" type="text" placeholder="Clave pública del proyecto" autocomplete="off" required></label><button class="secondary" type="submit">Guardar conexión</button></form>
-<form id="loginForm" hidden><label>Correo electrónico<input id="loginEmail" type="email" autocomplete="username" required></label><label>Contraseña<input id="loginPassword" type="password" autocomplete="current-password" required></label><button class="primary" type="submit">Entrar</button></form>
-<p id="authMessage" class="muted small" role="status">Configura la conexión a Supabase para iniciar sesión.</p></div>
+<div class="panel auth-panel"><p class="eyebrow">ACCESO SEGURO</p><h2>Iniciar sesión</h2><p class="muted small">Ingresa con tu cuenta de usuario del almacén.</p>
+<form id="loginForm"><label>Usuario (correo electrónico)<input id="loginEmail" type="email" autocomplete="username" required></label><label>Contraseña<input id="loginPassword" type="password" autocomplete="current-password" required></label><button class="primary" type="submit">Entrar</button></form>
+<p id="authMessage" class="muted small" role="status">Inicia sesión para acceder al almacén.</p></div>
 </section>
 <main id="appContent" hidden>
 <nav class="tabs" aria-label="Secciones">
@@ -55,7 +54,7 @@
 </section>
 <section id="settings" class="view">
 <div class="section-head"><div><p class="eyebrow">CONFIGURACIÓN</p><h2>Datos y sincronización</h2></div></div>
-<div class="panel"><h3>Sincronización en tiempo real</h3><p>Los cambios se comparten al instante entre usuarios conectados. Si se pierde la conexión, el sistema queda en modo de solo consulta hasta recuperar la conexión.</p><div class="button-row"><button class="primary" id="refreshSync" data-write>Sincronizar ahora</button></div><p id="syncMessage" class="muted small">Conectado a Supabase Realtime.</p><p class="small muted">La clave pública se guarda en este navegador; nunca uses una clave service_role en la app.</p></div>
+<div class="panel"><h3>Sincronización en tiempo real</h3><p>Los cambios se comparten al instante entre usuarios conectados. Si se pierde la conexión, el sistema queda en modo de solo consulta hasta recuperar la conexión.</p><div class="button-row"><button class="primary" id="refreshSync" data-write>Sincronizar ahora</button></div><p id="syncMessage" class="muted small">Conectado a Supabase Realtime.</p><p class="small muted">La URL y clave pública de Supabase se configuran en el entorno de Netlify. Nunca uses una clave service_role en la app.</p></div>
 <div class="panel"><h3>Importar y exportar</h3><p>Exporta copias JSON sin credenciales. Importar combina racks, posiciones y pallets con los datos en la nube; no borra registros existentes ni reemplaza el historial de auditoría.</p><div class="button-row"><button class="secondary" id="exportData">Exportar copia JSON</button><label class="file-button">Importar JSON<input type="file" id="importFile" accept=".json,application/json" hidden></label><button class="secondary" id="exportCsv">Exportar inventario CSV</button></div></div>
 <div class="panel"><h3>Instalar en iPhone</h3><ol><li>Publica esta carpeta en un hosting HTTPS, por ejemplo GitHub Pages.</li><li>Abre la URL en Safari.</li><li>Pulsa Compartir → Añadir a pantalla de inicio.</li><li>Permite el uso de la cámara al escanear. La cámara requiere HTTPS.</li></ol></div>
 <div class="panel warning"><h3>Nota sobre los datos</h3><p>Los cambios requieren una sesión autenticada y una conexión activa con Supabase Realtime. Al perder conexión, los datos sincronizados quedan disponibles en modo de solo consulta; no se guardan cambios locales pendientes. Exporta copias de seguridad regularmente.</p></div>
@@ -69,6 +68,7 @@
 <footer>Almacén QR · Primera versión · Verifica siempre la ubicación física antes de mover mercancía.</footer>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 <script src="app.js"></script>

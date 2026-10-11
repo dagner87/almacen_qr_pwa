@@ -17,7 +17,7 @@ PWA en español para gestionar ubicaciones de racks, pallets mixtos, marcas y ca
 - Almacenamiento local con IndexedDB y modo PWA básico.
 
 ## Abrir / publicar
-La aplicación necesita servirse desde un servidor HTTP(S); no abras `index.html` con doble clic para probar la cámara o el service worker.
+La aplicación necesita servirse desde un servidor HTTP(S); no abras `index.html` con doble clic para probar la cámara o el service worker. Netlify genera `supabase-config.js` automáticamente. En otros hostings estáticos hay que generar e incluir ese archivo con `node scripts/generate-supabase-config.js` después de definir las mismas variables de entorno.
 1. Sube todos los archivos a un repositorio GitHub.
 2. En GitHub: Settings → Pages → Deploy from a branch → `main` / root.
 3. Abre la URL HTTPS en Safari para iPhone o Chrome en Android.
@@ -26,13 +26,14 @@ La aplicación necesita servirse desde un servidor HTTP(S); no abras `index.html
 Las librerías QR, lector, código de barras y Supabase se cargan desde CDN. La aplicación y los datos locales básicos quedan en caché, pero la primera carga de esas librerías necesita Internet. Para uso offline robusto, deben incorporarse las librerías al proyecto y probarse en los dispositivos concretos.
 
 ### Publicar en Netlify
-El archivo `netlify.toml` configura el directorio raíz como sitio estático; no se necesita comando de compilación.
+El archivo `netlify.toml` publica el directorio raíz y genera la configuración de Supabase durante el build usando variables de entorno.
 1. En Netlify, importa `dagner87/almacen_qr_pwa` desde GitHub.
-2. Para probar esta versión, selecciona la rama `dagner87-netlify-deployment` como rama de publicación; Netlify usará la configuración del repositorio.
-3. Abre la URL HTTPS asignada por Netlify y prueba la cámara, que requiere permiso del navegador.
+2. En **Project configuration → Environment variables**, configura `SUPABASE_URL` y `SUPABASE_ANON_KEY` para el contexto de la rama que publicarás.
+3. Para probar esta versión, selecciona la rama `dagner87-netlify-deployment` como rama de publicación; Netlify generará `supabase-config.js` en el build.
+4. Abre la URL HTTPS asignada por Netlify y prueba la cámara, que requiere permiso del navegador.
 
 ## Primer uso
-1. Configura Supabase siguiendo la sección siguiente y pega la URL del proyecto y la clave pública en la pantalla de acceso.
+1. Configura en Netlify las variables `SUPABASE_URL` y `SUPABASE_ANON_KEY` siguiendo la sección siguiente.
 2. Crea una cuenta en **Supabase Authentication → Users**.
 3. Asigna el rol inicial de administrador con la instrucción SQL de arranque que aparece al final de `supabase.sql`.
 4. Inicia sesión. Los administradores pueden crear racks, niveles y posiciones y asignar roles; los operadores solo pueden crear, editar y mover pallets en posiciones existentes.
@@ -53,11 +54,11 @@ Supabase es requerido para iniciar sesión, guardar cambios y compartir inventar
 1. Crea un proyecto en Supabase.
 2. En SQL Editor, ejecuta `supabase.sql`. La migración habilita RLS, perfiles, auditoría de cambios de pallet y publicación Realtime. Se puede volver a ejecutar para aplicar columnas/políticas idempotentes.
 3. En **Project Settings → API**, copia Project URL y la clave pública `anon`/publishable.
-4. En la pantalla de acceso, guarda la URL y clave pública en cada dispositivo.
+4. En Netlify, abre **Project configuration → Environment variables** y crea `SUPABASE_URL` con el Project URL y `SUPABASE_ANON_KEY` con la clave pública. Aplica ambas variables al contexto de producción y a cada branch deploy que vayas a probar; luego vuelve a desplegar.
 5. Crea la primera cuenta desde **Authentication → Users**. Luego, en SQL Editor, sustituye el correo en la última instrucción comentada de `supabase.sql` para asignar el primer rol `admin`; ejecútala una sola vez.
-6. Inicia sesión como administrador y crea usuarios adicionales en Supabase Authentication. Esos perfiles empiezan como `operator`; el administrador puede promoverlos desde **Administrar → Usuarios y roles**.
+6. Inicia sesión usando el correo de Supabase en el campo **Usuario** y la contraseña. Crea usuarios adicionales en Supabase Authentication; esos perfiles empiezan como `operator` y el administrador puede cambiar su rol desde **Administrar → Usuarios y roles**.
 
-Los permisos también están protegidos por políticas RLS y triggers de base de datos: solo administradores cambian la estructura, los usuarios autenticados actualizan pallets y los cambios de stock generan entradas de auditoría con el usuario y correo autenticados. El SQL no permite borrar ubicaciones ocupadas ni dejar el almacén sin administradores. Nunca incluyas una clave `service_role` en el navegador.
+Los permisos también están protegidos por políticas RLS y triggers de base de datos: solo administradores cambian la estructura, los usuarios autenticados actualizan pallets y los cambios de stock generan entradas de auditoría con el usuario y correo autenticados. El SQL no permite borrar ubicaciones ocupadas ni dejar el almacén sin administradores. `SUPABASE_ANON_KEY` es la clave pública que usa el navegador; nunca configures ni incluyas una clave `service_role`.
 
 ### Limitaciones operativas
 - La app bloquea los cambios cuando no hay conexión a Internet o la suscripción Realtime no está activa; la vista ya sincronizada queda disponible como solo lectura.
