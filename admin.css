@@ -3,6 +3,7 @@
 .auth-panel h2{margin:0 0 6px}
 .auth-panel form{margin-top:16px}
 .auth-panel[hidden],.auth-gate[hidden],main[hidden]{display:none}
+.auth-link{display:block;margin:12px auto 0;padding:4px 8px;background:transparent;border:0;color:var(--green);text-decoration:underline}
 .topbar-actions{display:flex;align-items:center;gap:10px}
 .topbar-actions .small{color:#e1ebe6}
 .admin-rack{background:#f8faf8;border:1px solid var(--line);border-radius:12px;padding:12px}
