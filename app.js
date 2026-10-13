@@ -220,7 +220,6 @@ function updateConnectivity(){
  if($('dashboardMoves'))$('dashboardMoves').hidden=!canAccessModule('moves');
  const activeView=document.querySelector('.view.active')?.id;if(activeView&&!['admin','settings'].includes(activeView)&&!canAccessModule(activeView))showView('dashboard');
  document.querySelectorAll('[data-write]').forEach(element=>{element.disabled=!ready||(element.dataset.role==='admin'&&currentProfile?.role!=='admin')});
- if(currentProfile?.role==='admin'&&$('admin').classList.contains('active'))renderAdminTools(false);
  if(currentProfile?.role!=='admin'&&$('admin').classList.contains('active'))showView('dashboard')
 }function renderAll(){
  renderDashboard();renderLocations();renderPallets();fillLocationOptions();renderRecent();renderMoves();
