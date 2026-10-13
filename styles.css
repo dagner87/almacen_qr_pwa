@@ -16,11 +16,13 @@
 @media print {
   @page { margin: 12mm; }
   html, body { width: 100%; height: auto; overflow: visible !important; }
-  body * { visibility: hidden !important; }
-  #qrDialog[open], #qrDialog[open] * { visibility: visible !important; }
+  body * { display: none !important; visibility: hidden !important; }
+  #qrDialog[open], #qrDialog[open] * { display: block !important; visibility: visible !important; }
   #qrDialog[open] {
-    position: static !important;
-    inset: auto !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
     display: block !important;
     width: 100% !important;
     max-width: none !important;
@@ -33,7 +35,7 @@
     box-shadow: none !important;
     transform: none !important;
   }
-  #qrContent {
+  #qrDialog[open] #qrContent {
     position: static !important;
     display: flex !important;
     width: 100% !important;
@@ -47,7 +49,9 @@
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
-  #qrContent #qrImage,
+  #qrContent #qrImage { display: block !important; width: 190px !important; height: auto !important; }
+  #qrContent #qrImage canvas { display: none !important; }
+  #qrContent #qrImage img,
   #qrContent canvas,
   #qrContent img {
     display: block !important;
