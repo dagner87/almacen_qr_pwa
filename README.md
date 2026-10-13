@@ -6,7 +6,7 @@ PWA en español para gestionar ubicaciones de racks, pallets mixtos, marcas y ca
 - Crear racks con cinco niveles y posiciones múltiples por nivel; restaurar o eliminar niveles y eliminar posiciones/racks desde la administración.
 - Nomenclatura `R01-N02-P03`: rack, nivel contado desde abajo y posición.
 - Generar e imprimir etiquetas de código de barras Code 128 para todas las ubicaciones o por rack.
-- Crear/editar pallets mixtos con ID QR, ubicación, varios códigos de producto y cantidades por código; también permite pegar una lista tabulada o en formato `| código | cantidad |`.
+- Crear/editar pallets mixtos con ID QR, ubicación y una tabla dinámica para agregar varios productos, cada uno con código, descripción y cantidad.
 - Generar e imprimir QR de ubicación y pallet.
 - Leer QR y Code 128 con cámara (requiere HTTPS y permiso de cámara) o introducir código manualmente.
 - Buscar ubicaciones y pallets; mover pallets; registrar movimientos con usuario y hora.
@@ -39,14 +39,14 @@ El archivo `netlify.toml` publica el directorio raíz y genera la configuración
 4. Inicia sesión. Los administradores pueden crear racks, niveles y posiciones y asignar roles; los operadores solo pueden crear, editar y mover pallets en posiciones existentes.
 5. Abre **Administrar** → **Crear racks**, indica número inicial, cantidad de racks y posiciones por nivel.
 6. En **Ubicaciones**, pulsa **Imprimir códigos**, elige un rack o todos e imprime las etiquetas Code 128.
-7. En **Pallets** crea cada pallet, agrega productos/cantidades o pega una lista de dos columnas; imprime la etiqueta QR del pallet.
+7. En **Pallets** crea cada pallet y agrega sus productos en filas con código, descripción y cantidad; imprime la etiqueta QR del pallet.
 8. El administrador crea las cuentas adicionales en Supabase Authentication. Al iniciar sesión por primera vez, cada cuenta recibe rol de operador; el administrador puede cambiar su rol en la sección **Administrar**.
 
 ### Convención sugerida
 - `R01-N01-P01` = Rack 1, nivel 1 (abajo), posición 1.
 - `PLT-000001` = ID legible del pallet; el QR contiene ese ID, no todos los datos.
 - Una posición es un hueco físico concreto. Si en un nivel caben tres pallets, configura tres posiciones.
-- Las cantidades de productos se guardan en cada pallet como líneas con código y cantidad. Los pallets de respaldos anteriores, que solo registraban cajas, siguen siendo compatibles.
+- Los productos se guardan en cada pallet como líneas con código, descripción y cantidad. Los pallets de respaldos anteriores, que solo registraban cajas, siguen siendo compatibles.
 
 ## Supabase, autenticación y tiempo real
 Supabase es requerido para iniciar sesión, guardar cambios y compartir inventario entre dispositivos. Los usuarios y sus credenciales se crean en **Supabase Authentication**; nunca se crea ni almacena una contraseña desde esta app.
