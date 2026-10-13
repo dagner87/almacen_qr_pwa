@@ -1,6 +1,6 @@
 /* Almacén QR: primera versión. Datos locales en IndexedDB; sincronización opcional con Supabase. */
 const DB_NAME='almacenQRDB', DB_VERSION=1;
-const AUTH_DISABLED=false;
+const AUTH_DISABLED=true; // Modo local temporal mientras se corrige la conexión con Supabase.
 let db, supabaseClient=null, scanEngine=null, scanRunning=false, currentQr={code:'',title:''},currentUser=null,currentProfile=null,realtimeChannel=null,realtimeReady=false,realtimeFirstSubscription=true,passwordRecoveryUser=null;
 const sharedStores=['racks','locations','pallets','moves'];
 const $=id=>document.getElementById(id);
@@ -124,9 +124,13 @@ async function deleteStructure(kind,rackCode,level,locationId){
  if(!confirm(`¿Eliminar ${label} y sus posiciones? Esta acción no se puede deshacer.`))return;
  const rack=state.racks.find(item=>item.code===rackCode);
  try{
-  if(locations.length){const {data,error}=await supabaseClient.from('locations').delete().in('id',locations.map(item=>item.id)).select('id');if(error)throw error;if(data?.length!==locations.length)throw new Error('Supabase no eliminó todas las posiciones. Verifica tu rol de administrador y que no tengan pallets.')}
-  if(kind==='rack'&&rack){const {data,error}=await supabaseClient.from('racks').delete().eq('id',rack.id).select('id');if(error)throw error;if(!data?.length)throw new Error('Supabase no eliminó el rack. Verifica que tu usuario tenga rol de administrador.');await del('racks',rack.id)}
-  if(kind==='level'&&rack){const disabledLevels=[...new Set([...(rack.disabledLevels||[]).map(Number),Number(level)])];const {error}=await supabaseClient.from('racks').update({disabledLevels}).eq('id',rack.id);if(error)throw error;await put('racks',{...rack,disabledLevels})}
+  if(!AUTH_DISABLED){
+   if(locations.length){const {data,error}=await supabaseClient.from('locations').delete().in('id',locations.map(item=>item.id)).select('id');if(error)throw error;if(data?.length!==locations.length)throw new Error('Supabase no eliminó todas las posiciones. Verifica tu rol de administrador y que no tengan pallets.')}
+   if(kind==='rack'&&rack){const {data,error}=await supabaseClient.from('racks').delete().eq('id',rack.id).select('id');if(error)throw error;if(!data?.length)throw new Error('Supabase no eliminó el rack. Verifica que tu usuario tenga rol de administrador.')}
+   if(kind==='level'&&rack){const disabledLevels=[...new Set([...(rack.disabledLevels||[]).map(Number),Number(level)])];const {error}=await supabaseClient.from('racks').update({disabledLevels}).eq('id',rack.id);if(error)throw error}
+  }
+  if(kind==='rack'&&rack)await del('racks',rack.id);
+  if(kind==='level'&&rack){const disabledLevels=[...new Set([...(rack.disabledLevels||[]).map(Number),Number(level)])];await put('racks',{...rack,disabledLevels})}
   for(const location of locations)await del('locations',location.id);
   await loadState();toast(`${label} eliminado.`)
  }catch(error){toast('No se pudo eliminar '+label+': '+error.message)}
@@ -135,7 +139,7 @@ async function restoreRackLevel(rackCode,level){
  if(!canWrite(true))return;
  const rack=state.racks.find(item=>item.code===rackCode);if(!rack)return;
  const disabledLevels=(rack.disabledLevels||[]).map(Number).filter(value=>value!==Number(level));
- try{const {error}=await supabaseClient.from('racks').update({disabledLevels}).eq('id',rack.id);if(error)throw error;await put('racks',{...rack,disabledLevels});await loadState();toast(`Nivel ${level} restaurado. Agrega sus posiciones para usarlo.`)}catch(error){toast('No se pudo restaurar el nivel: '+error.message)}
+ try{if(!AUTH_DISABLED){const {error}=await supabaseClient.from('racks').update({disabledLevels}).eq('id',rack.id);if(error)throw error}await put('racks',{...rack,disabledLevels});await loadState();toast(`Nivel ${level} restaurado. Agrega sus posiciones para usarlo.`)}catch(error){toast('No se pudo restaurar el nivel: '+error.message)}
 }
 function updateConnectivity(){
  const ready=Boolean(currentUser&&currentProfile&&navigator.onLine&&realtimeReady);
