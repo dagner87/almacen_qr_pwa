@@ -10,7 +10,7 @@ PWA en español para gestionar ubicaciones de racks, pallets mixtos, marcas y ca
 - Generar e imprimir QR de ubicación y pallet.
 - Leer QR y Code 128 con cámara (requiere HTTPS y permiso de cámara) o introducir código manualmente.
 - Asociar un pallet a una ubicación escaneando primero la etiqueta física del rack y después el código del pallet; pedir confirmación antes de cambiar la ubicación.
-- Buscar ubicaciones y pallets; mover pallets; registrar movimientos con usuario y hora.
+- Buscar ubicaciones y pallets; mover pallets; asociar productos con existencias en otras ubicaciones, unificándolas o manteniéndolas separadas; registrar movimientos con usuario y hora.
 - Exportar inventario CSV y copia completa JSON; importar JSON.
 - Acceso autenticado Supabase con roles de administrador y operador.
 - Panel de administración para crear/eliminar la estructura y asignar roles.
