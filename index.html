@@ -17,17 +17,17 @@
 </section>
 <main id="appContent">
 <nav class="tabs" aria-label="Secciones">
-<button class="tab active" data-view="dashboard">Inicio</button><button class="tab" data-view="locations">Ubicaciones</button><button class="tab" data-view="pallets">Pallets</button><button class="tab" data-view="scan">Escanear</button><button class="tab" data-view="admin" data-role="admin" hidden>Administrar</button><button class="tab" data-view="settings" data-role="admin" hidden>Datos / Sync</button>
+<button class="tab active" data-view="dashboard" data-module="dashboard">Inicio</button><button class="tab" data-view="locations" data-module="locations">Ubicaciones</button><button class="tab" data-view="pallets" data-module="pallets">Pallets</button><button class="tab" data-view="scan" data-module="scan">Escanear</button><button class="tab" data-view="admin" data-role="admin" hidden>Administrar</button><button class="tab" data-view="settings" data-role="admin" hidden>Datos / Sync</button><button class="tab" data-view="moves" data-module="moves">Movimientos</button>
 </nav>
 <section id="dashboard" class="view active">
 <div class="hero"><div><p class="eyebrow">RESUMEN DEL ALMACÉN</p><h2>Encuentra cada caja.</h2><p class="muted">Ubicaciones, pallets mixtos y cantidades en un solo lugar.</p></div><div class="hero-icon">▦</div></div>
 <div class="stats"><article class="stat"><span>Racks</span><strong id="statRacks">0</strong></article><article class="stat"><span>Posiciones</span><strong id="statLocations">0</strong></article><article class="stat"><span>Pallets activos</span><strong id="statPallets">0</strong></article><article class="stat"><span>Unidades / cajas</span><strong id="statBoxes">0</strong></article></div>
 <div class="section-head"><h3>Accesos rápidos</h3></div><div class="quick-grid">
-<button class="quick" data-goto="scan"><span>⌗</span><b>Escanear código</b><small>Consultar una ubicación o pallet</small></button>
-<button class="quick" data-goto="pallets"><span>＋</span><b>Nuevo pallet</b><small>Registrar productos y cantidades</small></button>
-<button class="quick" data-goto="locations"><span>▤</span><b>Ver ubicaciones</b><small>Buscar por rack y nivel</small></button>
+<button class="quick" data-goto="scan" data-module="scan"><span>⌗</span><b>Escanear código</b><small>Consultar una ubicación o pallet</small></button>
+<button class="quick" data-goto="pallets" data-module="pallets"><span>＋</span><b>Nuevo pallet</b><small>Registrar productos y cantidades</small></button>
+<button class="quick" data-goto="locations" data-module="locations"><span>▤</span><b>Ver ubicaciones</b><small>Buscar por rack y nivel</small></button>
 </div>
-<div class="section-head"><h3>Movimientos recientes</h3><small>Últimos registros</small></div><div id="recent" class="list empty">Todavía no hay movimientos.</div>
+<div id="dashboardMoves"><div class="section-head"><h3>Movimientos recientes</h3><small>Últimos registros</small></div><div id="recent" class="list empty">Todavía no hay movimientos.</div></div>
 <div class="notice"><b>Recomendación operativa:</b> una posición representa un espacio físico concreto. Si caben tres pallets en un nivel, crea tres posiciones independientes.</div>
 </section>
 <section id="locations" class="view">
@@ -48,11 +48,12 @@
 <form id="manualScanForm" class="inline-form"><input id="manualCode" placeholder="Ej. PLT-000001 o R01-N02-P03" required><button class="secondary">Abrir</button></form>
 <div id="scanResult"></div>
 </section>
+<section id="moves" class="view"><div class="section-head"><div><p class="eyebrow">AUDITORÍA DE INVENTARIO</p><h2>Movimientos</h2></div></div><p class="muted">Altas, cambios, movimientos y bajas de pallets.</p><div id="moveHistory" class="list"></div></section>
 <section id="admin" class="view">
 <div class="section-head"><div><p class="eyebrow">ADMINISTRACIÓN</p><h2>Administrar almacén</h2></div><button class="primary" id="adminAddRackBtn" data-write>＋ Crear racks</button></div>
 <div class="panel"><h3>Agregar posiciones a un rack</h3><p class="muted small">Se añadirán posiciones al nivel seleccionado. Los usuarios solo pueden usar posiciones existentes.</p><form id="addPositionsForm"><label>Rack<select id="positionRack" required></select></label><label>Nivel<select id="positionLevel" required></select></label><label>Cantidad de posiciones nuevas<input id="positionsToAdd" type="number" min="1" max="20" value="1" required></label><button class="primary" type="submit" data-write>Agregar posiciones</button></form></div>
-<div class="panel"><h3>Estructura y eliminación</h3><p class="muted small">No se puede eliminar una ubicación que tenga pallets. Mueve el inventario antes de borrar su posición, nivel o rack.</p><div id="adminStructureList" class="list"></div></div>
-<div class="panel"><h3>Usuarios y roles</h3><p class="muted small">Crea las cuentas en Supabase Authentication. Aquí puedes asignar el rol de administrador u operador.</p><div id="userRoleList" class="list"></div></div>
+<div class="panel"><h3>Estructura y eliminación</h3><p class="muted small">Selecciona varios racks, niveles o posiciones. Al eliminarlos, también se eliminarán los pallets guardados en sus posiciones.</p><div class="admin-bulk-actions"><span id="structureSelectionCount" class="muted small">Sin elementos seleccionados</span><button class="mini danger" id="deleteSelectedStructure" data-write disabled>Eliminar seleccionados</button></div><div id="adminStructureList" class="list"></div></div>
+<div class="panel"><h3>Usuarios y roles</h3><p class="muted small">Las cuentas se crean en Supabase Authentication. Aquí puedes asignar roles y controlar el acceso a cada módulo. El permiso Pallets permite crear, editar y mover pallets; Movimientos es de consulta.</p><div id="userRoleList" class="list"></div></div>
 </section>
 <section id="settings" class="view">
 <div class="section-head"><div><p class="eyebrow">CONFIGURACIÓN</p><h2>Datos y sincronización</h2></div></div>

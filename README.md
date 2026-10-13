@@ -58,7 +58,7 @@ Supabase es requerido para iniciar sesión, guardar cambios y compartir inventar
 5. Crea la primera cuenta desde **Authentication → Users**. Luego, en SQL Editor, sustituye el correo en la última instrucción comentada de `supabase.sql` para asignar el primer rol `admin`; ejecútala una sola vez.
 6. Inicia sesión usando el correo de Supabase en el campo **Usuario** y la contraseña. Crea usuarios adicionales en Supabase Authentication; esos perfiles empiezan como `operator` y el administrador puede cambiar su rol desde **Administrar → Usuarios y roles**.
 
-Los permisos también están protegidos por políticas RLS y triggers de base de datos: solo administradores cambian la estructura, los usuarios autenticados actualizan pallets y los cambios de stock generan entradas de auditoría con el usuario y correo autenticados. El SQL no permite borrar ubicaciones ocupadas ni dejar el almacén sin administradores. `SUPABASE_ANON_KEY` es la clave pública que usa el navegador; nunca configures ni incluyas una clave `service_role`.
+Los permisos también están protegidos por políticas RLS y triggers de base de datos: solo administradores cambian la estructura, los usuarios autenticados actualizan pallets y los cambios de stock generan entradas de auditoría. Desde Administración se pueden seleccionar varios racks, niveles y posiciones; al eliminar, los pallets asociados y las ubicaciones se eliminan en cascada. El historial de movimientos se conserva. El SQL tampoco permite dejar el almacén sin administradores. `SUPABASE_ANON_KEY` es la clave pública que usa el navegador; nunca configures ni incluyas una clave `service_role`.
 
 ### Limitaciones operativas
 - La app bloquea los cambios cuando no hay conexión a Internet o la suscripción Realtime no está activa; la vista ya sincronizada queda disponible como solo lectura.
@@ -68,4 +68,4 @@ Los permisos también están protegidos por políticas RLS y triggers de base de
 - Capacidad de posición predeterminada = 1 pallet; la estructura permite listar varias posiciones por nivel.
 
 ## Recomendación antes de usar en producción
-Prueba con un administrador, un operador, un rack y varios pallets en dispositivos reales. Verifica que el operador no pueda cambiar estructura/roles, que los movimientos se reflejen en todas las sesiones, que la auditoría indique el usuario correcto y que una posición ocupada no se pueda eliminar.
+Prueba con un administrador, un operador, un rack y varios pallets en dispositivos reales. Verifica que el operador no pueda cambiar estructura/roles, que los movimientos se reflejen en todas las sesiones, que la auditoría indique el usuario correcto y que eliminar una ubicación elimine en cascada sus pallets asociados y conserve el historial.

@@ -7,6 +7,10 @@
 .topbar-actions{display:flex;align-items:center;gap:10px}
 .topbar-actions .small{color:#e1ebe6}
 .admin-rack{background:#f8faf8;border:1px solid var(--line);border-radius:12px;padding:12px}
+.admin-select{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600}
+.admin-select input{width:18px;height:18px;accent-color:#9b2c20}
+.admin-bulk-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0 14px}
+.admin-positions .admin-select{padding:4px 7px;background:white;border:1px solid var(--line);border-radius:8px;font-size:12px}
 .admin-rack-head,.admin-level-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .admin-level{padding:12px 0;border-top:1px solid var(--line);margin-top:10px}
 .admin-level.inactive{opacity:.7}
@@ -14,8 +18,13 @@
 .admin-position{display:inline-flex;align-items:center;gap:5px;padding:5px 7px;background:white;border:1px solid var(--line);border-radius:8px;font-size:12px}
 .admin-position .mini{padding:2px 6px}
 .mini.danger{color:#9b2c20;background:#fff4f1;border-color:#f0d2cc}
-.user-role-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(140px,220px);align-items:center;gap:10px;margin:0;padding:10px 0;border-bottom:1px solid var(--line)}
-.user-role-row:last-child{border-bottom:0}
-.user-role-row select{margin:0}
+.user-role-card{padding:12px 0;border-bottom:1px solid var(--line)}
+.user-role-card:last-child{border-bottom:0}
+.user-role-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.user-role-head label{display:flex;align-items:center;gap:8px;font-size:13px}
+.user-role-head select{width:auto;min-width:150px;margin:0}
+.user-permission-grid{display:flex;flex-wrap:wrap;gap:8px 16px;padding:10px 0}
+.user-permission-grid label{display:inline-flex;align-items:center;gap:5px;font-size:13px}
+.user-permission-grid input{width:16px;height:16px;accent-color:var(--green)}
 button:disabled{cursor:not-allowed;opacity:.52}
-@media(max-width:620px){.auth-gate{margin:5vh auto;padding:12px}.auth-panel{padding:18px}.topbar-actions{flex-wrap:wrap;justify-content:flex-end}.user-role-row{grid-template-columns:1fr 135px}}
+@media(max-width:620px){.auth-gate{margin:5vh auto;padding:12px}.auth-panel{padding:18px}.topbar-actions{flex-wrap:wrap;justify-content:flex-end}.user-role-head{align-items:flex-start;flex-direction:column}.user-role-head select{min-width:100%}}

@@ -64,8 +64,10 @@ create table if not exists public.profiles (
   user_id uuid primary key references auth.users(id) on delete cascade,
   email text not null,
   role text not null default 'operator' check (role in ('admin', 'operator')),
+  permissions jsonb not null default '{"dashboard":true,"locations":true,"pallets":true,"scan":true,"moves":true}'::jsonb,
   created_at timestamptz not null default now()
 );
+alter table public.profiles add column if not exists permissions jsonb not null default '{"dashboard":true,"locations":true,"pallets":true,"scan":true,"moves":true}'::jsonb;
 
 create or replace function public.is_admin()
 returns boolean
@@ -77,6 +79,20 @@ as $$
   select exists (
     select 1 from public.profiles
     where user_id = auth.uid() and role = 'admin'
+  );
+$$;
+
+create or replace function public.has_module_access(module_name text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles
+    where user_id = auth.uid()
+      and (role = 'admin' or coalesce(permissions ->> module_name, 'false') = 'true')
   );
 $$;
 
@@ -147,9 +163,7 @@ security definer
 set search_path = public
 as $$
 begin
-  if exists (select 1 from public.pallets where "locationId" = old.id) then
-    raise exception 'Mueve o elimina los pallets antes de borrar esta ubicación.';
-  end if;
+  delete from public.pallets where "locationId" = old.id;
   return old;
 end;
 $$;
@@ -166,12 +180,8 @@ security definer
 set search_path = public
 as $$
 begin
-  if exists (
-    select 1 from public.locations
-    where "rackId" = old.code or code like old.code || '-%'
-  ) then
-    raise exception 'Elimina primero los niveles y posiciones del rack.';
-  end if;
+  delete from public.locations
+  where "rackId" = old.code or code like old.code || '-%';
   return old;
 end;
 $$;
@@ -180,7 +190,6 @@ drop trigger if exists prevent_rack_delete_with_locations_before_delete on publi
 create trigger prevent_rack_delete_with_locations_before_delete
 before delete on public.racks
 for each row execute function public.prevent_rack_delete_with_locations();
-
 create or replace function public.prevent_unsafe_role_change()
 returns trigger
 language plpgsql
@@ -299,26 +308,26 @@ drop policy if exists "users can read own profile or admins all" on public.profi
 drop policy if exists "admins can update profiles" on public.profiles;
 
 create policy "authenticated can read racks" on public.racks
-for select to authenticated using (true);
+for select to authenticated using (public.has_module_access('dashboard') or public.has_module_access('locations') or public.has_module_access('pallets') or public.has_module_access('scan') or public.has_module_access('moves'));
 create policy "admins manage racks" on public.racks
 for all to authenticated using (public.is_admin()) with check (public.is_admin());
 
 create policy "authenticated can read locations" on public.locations
-for select to authenticated using (true);
+for select to authenticated using (public.has_module_access('dashboard') or public.has_module_access('locations') or public.has_module_access('pallets') or public.has_module_access('scan') or public.has_module_access('moves'));
 create policy "admins manage locations" on public.locations
 for all to authenticated using (public.is_admin()) with check (public.is_admin());
 
 create policy "authenticated can read pallets" on public.pallets
-for select to authenticated using (true);
+for select to authenticated using (public.has_module_access('dashboard') or public.has_module_access('pallets') or public.has_module_access('scan'));
 create policy "authenticated can write pallets" on public.pallets
-for insert to authenticated with check (true);
+for insert to authenticated with check (public.has_module_access('pallets'));
 create policy "authenticated can update pallets" on public.pallets
-for update to authenticated using (true) with check (true);
+for update to authenticated using (public.has_module_access('pallets')) with check (public.has_module_access('pallets'));
 create policy "admins can delete pallets" on public.pallets
 for delete to authenticated using (public.is_admin());
 
 create policy "authenticated can read moves" on public.moves
-for select to authenticated using (true);
+for select to authenticated using (public.has_module_access('moves'));
 
 create policy "users can read own profile or admins all" on public.profiles
 for select to authenticated using (user_id = auth.uid() or public.is_admin());
@@ -326,6 +335,7 @@ create policy "admins can update profiles" on public.profiles
 for update to authenticated using (public.is_admin()) with check (public.is_admin());
 
 grant execute on function public.is_admin() to authenticated;
+grant execute on function public.has_module_access(text) to authenticated;
 
 do $$
 declare
