@@ -12,3 +12,51 @@
 .lookup-form{display:flex;align-items:end;gap:8px}.lookup-form label{flex:1;min-width:0;margin:8px 0}.lookup-form .search-submit{flex:0 0 44px}
 
 .inventory-table .location-highlight{background:#d6f06d;color:#123b32;font-weight:800;text-align:left!important;white-space:nowrap;border-radius:7px;padding:8px 12px}
+
+@media print {
+  @page { margin: 12mm; }
+  html, body { width: 100%; height: auto; overflow: visible !important; }
+  body * { visibility: hidden !important; }
+  #qrDialog[open], #qrDialog[open] * { visibility: visible !important; }
+  #qrDialog[open] {
+    position: static !important;
+    inset: auto !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+  #qrContent {
+    position: static !important;
+    display: flex !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    align-items: center !important;
+    justify-content: center !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  #qrContent #qrImage,
+  #qrContent canvas,
+  #qrContent img {
+    display: block !important;
+    width: 190px !important;
+    height: 190px !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    object-fit: contain !important;
+  }
+  #qrContent strong, #qrContent p { display: block !important; text-align: center !important; overflow-wrap: anywhere !important; }
+  #qrDialog .dialog-head, #qrDialog .button-row, .qr-preview { display: none !important; visibility: hidden !important; }
+}
