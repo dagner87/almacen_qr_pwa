@@ -1,4 +1,4 @@
--- Ejecuta este script en Supabase > SQL Editor.
+﻿-- Ejecuta este script en Supabase > SQL Editor.
 -- Crea las tablas, roles, auditoría de inventario, permisos y publicación Realtime.
 -- No expongas una clave service_role en la aplicación.
 
@@ -64,11 +64,11 @@ create table if not exists public.profiles (
   user_id uuid primary key references auth.users(id) on delete cascade,
   email text not null,
   role text not null default 'operator' check (role in ('admin', 'operator')),
-  permissions jsonb not null default '{"dashboard":false,"search":true,"locations":false,"pallets":false,"scan":false,"moves":false}'::jsonb,
+  permissions jsonb not null default '{"dashboard":false,"search":true,"locations":false,"pallets":true,"scan":false,"moves":false}'::jsonb,
   created_at timestamptz not null default now()
 );
-alter table public.profiles add column if not exists permissions jsonb not null default '{"dashboard":false,"search":true,"locations":false,"pallets":false,"scan":false,"moves":false}'::jsonb;
-alter table public.profiles alter column permissions set default '{"dashboard":false,"search":true,"locations":false,"pallets":false,"scan":false,"moves":false}'::jsonb;
+alter table public.profiles add column if not exists permissions jsonb not null default '{"dashboard":false,"search":true,"locations":false,"pallets":true,"scan":false,"moves":false}'::jsonb;
+alter table public.profiles alter column permissions set default '{"dashboard":false,"search":true,"locations":false,"pallets":true,"scan":false,"moves":false}'::jsonb;
 
 create or replace function public.is_admin()
 returns boolean

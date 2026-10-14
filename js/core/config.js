@@ -1,4 +1,4 @@
-/* Constantes de configuración y catálogo de módulos (pantallas). */
+﻿/* Constantes de configuración y catálogo de módulos (pantallas). */
 const DB_NAME = 'almacenQRDB',
   DB_VERSION = 1;
 
@@ -23,7 +23,7 @@ const DEFAULT_OPERATOR_PERMISSIONS = {
   dashboard: false,
   search: true,
   locations: false,
-  pallets: false,
+  pallets: true,
   scan: false,
   moves: false,
 };
