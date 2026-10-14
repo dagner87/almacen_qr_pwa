@@ -59,6 +59,9 @@ create table if not exists public.moves (
 
 alter table public.moves add column if not exists actor_id uuid;
 alter table public.moves add column if not exists actor_email text;
+alter table public.moves add column if not exists products jsonb not null default '[]'::jsonb;
+create index if not exists moves_at_idx on public.moves (at desc);
+create index if not exists moves_action_idx on public.moves (action);
 
 create table if not exists public.profiles (
   user_id uuid primary key references auth.users(id) on delete cascade,
@@ -261,7 +264,7 @@ begin
     details_text := coalesce(pallet_boxes, 0)::text || ' cajas';
   end if;
 
-  insert into public.moves (id, action, "palletId", "from", "to", details, at, actor_id, actor_email)
+  insert into public.moves (id, action, "palletId", "from", "to", details, at, actor_id, actor_email, products)
   values (
     'MOV-' || replace(gen_random_uuid()::text, '-', ''),
     action_name,
@@ -271,7 +274,8 @@ begin
     details_text,
     now(),
     auth.uid(),
-    coalesce(auth.jwt() ->> 'email', 'Migración administrativa')
+    coalesce(auth.jwt() ->> 'email', 'Migración administrativa'),
+    case when tg_op = 'DELETE' then coalesce(old.products, '[]'::jsonb) else coalesce(new.products, '[]'::jsonb) end
   );
 
   if tg_op = 'DELETE' then

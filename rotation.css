@@ -1,0 +1,6 @@
+.rotation-wrap{overflow-x:auto}
+.rotation-table{width:100%;border-collapse:collapse;font-size:13px}
+.rotation-table th{text-align:left;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px;padding:6px 8px;border-bottom:1px solid var(--line)}
+.rotation-table td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+.rotation-table td:first-child{color:var(--muted);width:28px}
+.rotation-table small{color:var(--muted)}

@@ -46,8 +46,17 @@ async function loadState() {
   renderAll();
 }
 
-async function logMove(action, palletId, from, to, details = '') {
-  await put('moves', { id: uid('MOV'), action, palletId, from: from || '', to: to || '', details, at: now() });
+async function logMove(action, palletId, from, to, details = '', products = []) {
+  await put('moves', {
+    id: uid('MOV'),
+    action,
+    palletId,
+    from: from || '',
+    to: to || '',
+    details,
+    products,
+    at: now(),
+  });
   state.moves = await all('moves');
 }
 

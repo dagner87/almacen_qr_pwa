@@ -4,6 +4,7 @@ $('barcodeRackFilter').onchange = renderBarcodes;
 $('printBarcodes').onclick = printBarcodes;
 $('addPalletProduct').onclick = () => addProductRow();
 $('palletLocationSearch').oninput = () => fillLocationOptions();
+$('rotationRange').onchange = renderRotation;
 $('palletProductRows').addEventListener('change', (event) => {
   const input = event.target;
   if (!input.matches('.product-code')) return;

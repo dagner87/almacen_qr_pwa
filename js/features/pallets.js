@@ -76,7 +76,7 @@ function renderPallets() {
             detail = products.length
               ? `${products.length} productos · ${palletQuantity(p)} unidades · ${escapeHtml(locLabel(p.locationId))}`
               : `${escapeHtml(p.brand || 'Sin marca')} · ${Number(p.boxes || 0)} cajas · ${escapeHtml(locLabel(p.locationId))}`;
-          return `<article class="item"><div class="item-main"><div class="item-title">${escapeHtml(p.code)} · ${escapeHtml(p.description)}</div><div class="item-sub">${detail}</div>${products.length ? `<div class="product-summary">${products.map((item) => `<span>${escapeHtml(item.productCode)} × ${Number(item.quantity)}</span>`).join('')}</div>` : ''}<span class="pill ${p.status === 'active' ? '' : 'warn'}">${p.status === 'active' ? 'Activo' : p.status === 'empty' ? 'Vacío' : 'Baja'}</span></div><div class="item-actions"><button class="mini" data-edit-pallet="${p.id}" data-write>Editar</button><button class="mini" data-qr-pallet="${p.id}">QR</button><button class="mini" data-move-pallet="${p.id}" data-write>Mover</button><button class="mini" data-delete-pallet="${p.id}" data-role="admin" data-write hidden>Eliminar</button></div></article>`;
+          return `<article class="item"><div class="item-main"><div class="item-title">${escapeHtml(p.code)} · ${escapeHtml(p.description)}</div><div class="item-sub">${detail}</div><div class="item-sub">Creado: ${escapeHtml(formatDateTime(p.createdAt))} · ${movementCountFor(p.code)} movimiento(s)</div>${products.length ? `<div class="product-summary">${products.map((item) => `<span>${escapeHtml(item.productCode)} × ${Number(item.quantity)}</span>`).join('')}</div>` : ''}<span class="pill ${p.status === 'active' ? '' : 'warn'}">${p.status === 'active' ? 'Activo' : p.status === 'empty' ? 'Vacío' : 'Baja'}</span></div><div class="item-actions"><button class="mini" data-edit-pallet="${p.id}" data-write>Editar</button><button class="mini" data-qr-pallet="${p.id}">QR</button><button class="mini" data-move-pallet="${p.id}" data-write>Mover</button><button class="mini" data-delete-pallet="${p.id}" data-role="admin" data-write hidden>Eliminar</button></div></article>`;
         })
         .join('')
     : '<div class="empty">No hay pallets registrados.</div>';
@@ -230,6 +230,7 @@ async function savePallet(event) {
         old?.locationId || '',
         locationId,
         `${quantity} unidades · ${products.length} productos`,
+        products,
       );
       for (const plan of mergePlans.values()) {
         const details = [...plan.codes.entries()]
@@ -280,6 +281,7 @@ async function savePalletLocation(pallet, destination) {
         pallet.locationId,
         destination.id,
         `${palletQuantity(pallet)} ${palletQuantityLabel(pallet)}`,
+        palletProducts(pallet),
       );
     await loadState();
     toast(AUTH_DISABLED ? 'Ubicación actualizada en este dispositivo.' : 'Ubicación actualizada.');
