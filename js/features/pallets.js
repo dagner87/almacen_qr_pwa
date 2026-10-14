@@ -10,6 +10,9 @@ function productRowsMarkup(products = []) {
 
 function addProductRow(product = {}) {
   $('palletProductRows').insertAdjacentHTML('beforeend', productRowsMarkup([product]));
+  const row = $('palletProductRows').lastElementChild;
+  row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  row.querySelector('.product-code')?.focus({ preventScroll: true });
 }
 
 function readPalletProducts() {
