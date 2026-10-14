@@ -1,4 +1,4 @@
-/* Pantalla Buscar producto. */
+﻿/* Pantalla Buscar producto. */
 function renderProductLookup() {
   const input = $('productLookupInput'),
     target = $('productLookupResults');
@@ -22,6 +22,7 @@ function renderProductLookup() {
     target.innerHTML = '<div class="empty">No hay existencias activas para ese c\u00f3digo o descripci\u00f3n.</div>';
     return;
   }
-  const total = matches.reduce((sum, row) => sum + Number(row.item.quantity || 0), 0);
-  target.innerHTML = `<p class="lookup-total">${total.toLocaleString()} unidad(es) en ${matches.length} pallet(s)</p><div class="table-scroll"><table class="inventory-table"><thead><tr><th>C\u00f3digo</th><th>Descripci\u00f3n</th><th>Cantidad</th><th>Pallet</th><th>Ubicaci\u00f3n</th></tr></thead><tbody>${matches.map(({ pallet, item }) => `<tr><td>${escapeHtml(item.productCode)}</td><td>${escapeHtml(item.description || '')}</td><td>${Number(item.quantity).toLocaleString()}</td><td>${escapeHtml(pallet.code)}</td><td class="location-highlight">${escapeHtml(locLabel(pallet.locationId))}</td></tr>`).join('')}</tbody></table></div>`;
+  const showPallet = currentProfile?.role !== 'operator',
+    total = matches.reduce((sum, row) => sum + Number(row.item.quantity || 0), 0);
+  target.innerHTML = `<p class="lookup-total">${total.toLocaleString()} unidad(es) en ${matches.length} pallet(s)</p><div class="table-scroll"><table class="inventory-table"><thead><tr><th>C\u00f3digo</th><th>Descripci\u00f3n</th><th>Cantidad</th>${showPallet ? '<th>Pallet</th>' : ''}<th>Ubicaci\u00f3n</th></tr></thead><tbody>${matches.map(({ pallet, item }) => `<tr><td>${escapeHtml(item.productCode)}</td><td>${escapeHtml(item.description || '')}</td><td>${Number(item.quantity).toLocaleString()}</td>${showPallet ? `<td>${escapeHtml(pallet.code)}</td>` : ''}<td class="location-highlight">${escapeHtml(locLabel(pallet.locationId))}</td></tr>`).join('')}</tbody></table></div>`;
 }
