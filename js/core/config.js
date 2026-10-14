@@ -24,6 +24,6 @@ const DEFAULT_OPERATOR_PERMISSIONS = {
   search: true,
   locations: false,
   pallets: true,
-  scan: false,
+  scan: true,
   moves: false,
 };
