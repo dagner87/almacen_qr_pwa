@@ -31,6 +31,10 @@
 .top-row>div:first-child{min-width:0}
 .bar{height:8px;background:#e6ece8;border-radius:8px;overflow:hidden}
 .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--green2),#6bb894);border-radius:8px}
+body:has(#authGate:not([hidden])){min-height:100vh;background:linear-gradient(180deg,#0a1f19d9 0%,#123b32b3 55%,#0a1f19f2 100%),url(login-bg.svg) center/cover no-repeat fixed}
+body:has(#authGate:not([hidden])) .topbar,body:has(#authGate:not([hidden])) footer{display:none}
+body:has(#authGate:not([hidden])) .auth-gate{min-height:100vh;margin:0 auto;display:flex;align-items:center;justify-content:center}
+body:has(#authGate:not([hidden])) .auth-panel{width:100%;background:#ffffffee;backdrop-filter:blur(6px);border:0;border-radius:18px;box-shadow:0 20px 60px #00000055}
 .tabs{border-bottom:1px solid var(--line);margin-bottom:14px}
 .tab{background:transparent}
 .tab:hover{background:#e7ece8}

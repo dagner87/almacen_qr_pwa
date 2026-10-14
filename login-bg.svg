@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b3a35"/><stop offset="1" stop-color="#101b17"/></linearGradient>
+<linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5f7a70"/><stop offset="1" stop-color="#2d423a"/></linearGradient>
+<g id="box"><rect width="70" height="52" rx="3" fill="#c79a5b"/><rect width="70" height="10" rx="3" fill="#dcb67a"/><rect x="30" width="10" height="52" fill="#a97d44" opacity=".6"/></g>
+<g id="rack">
+<rect x="0" y="0" width="12" height="520" fill="#e0782a"/><rect x="388" y="0" width="12" height="520" fill="#e0782a"/>
+<rect x="0" y="120" width="400" height="12" fill="#2d6fb3"/><rect x="0" y="260" width="400" height="12" fill="#2d6fb3"/><rect x="0" y="400" width="400" height="12" fill="#2d6fb3"/>
+<g transform="translate(25,68)"><use href="#box"/><use href="#box" x="80"/><use href="#box" x="160" y="0"/><use href="#box" x="250"/></g>
+<g transform="translate(25,208)"><use href="#box" x="20"/><use href="#box" x="100"/><use href="#box" x="190"/></g>
+<g transform="translate(25,348)"><use href="#box"/><use href="#box" x="80"/><use href="#box" x="165"/><use href="#box" x="250"/></g>
+</g>
+</defs>
+<rect width="1600" height="900" fill="url(#wall)"/>
+<rect y="560" width="1600" height="340" fill="url(#floor)"/>
+<g opacity=".95"><use href="#rack" x="40" y="60"/><use href="#rack" x="480" y="60"/><use href="#rack" x="920" y="60"/><use href="#rack" x="1360" y="60" transform="translate(0,0)"/></g>
+<g stroke="#ffffff22" stroke-width="3"><path d="M0 700H1600M0 790H1600"/></g>
+<g fill="#ffffff14"><rect x="100" y="0" width="160" height="30"/><rect x="600" y="0" width="160" height="30"/><rect x="1100" y="0" width="160" height="30"/></g>
+</svg>
