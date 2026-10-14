@@ -194,6 +194,7 @@ async function init() {
     if (button.dataset.deleteRack) await deleteStructure('rack', button.dataset.deleteRack, 0);
     if (button.dataset.restoreLevel) await restoreRackLevel(button.dataset.restoreLevel, Number(button.dataset.level));
     if (button.dataset.saveUserPermissions) await saveUserPermissions(button.dataset.saveUserPermissions);
+    if (button.dataset.addPalletLoc && canWrite()) showPalletDialog(null, button.dataset.addPalletLoc);
     if (button.dataset.openLoc) {
       const location = state.locations.find((item) => item.id === button.dataset.openLoc);
       if (location) {

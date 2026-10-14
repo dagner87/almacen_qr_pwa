@@ -86,12 +86,12 @@ function renderPallets() {
   updateConnectivity();
 }
 
-function showPalletDialog(p = null) {
+function showPalletDialog(p = null, presetLocationId = '') {
   $('palletForm').reset();
   $('palletId').value = p?.id || '';
   $('palletDialogTitle').textContent = p ? 'Editar pallet' : 'Nuevo pallet';
   $('palletNotes').value = p?.notes || '';
-  fillLocationOptions(p?.locationId || '');
+  fillLocationOptions(p?.locationId || presetLocationId);
   const products = palletProducts(p);
   $('palletProductRows').innerHTML = productRowsMarkup(products.length ? products : [{}]);
   $('palletQrPreview').innerHTML = p

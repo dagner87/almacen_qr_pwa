@@ -22,7 +22,7 @@ const MODULES = [
 const DEFAULT_OPERATOR_PERMISSIONS = {
   dashboard: false,
   search: true,
-  locations: false,
+  locations: true,
   pallets: true,
   scan: true,
   moves: false,

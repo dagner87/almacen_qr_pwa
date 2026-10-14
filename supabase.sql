@@ -74,12 +74,12 @@ create table if not exists public.profiles (
   user_id uuid primary key references auth.users(id) on delete cascade,
   email text not null,
   role text not null default 'operator' check (role in ('admin', 'operator')),
-  permissions jsonb not null default '{"dashboard":false,"search":true,"locations":false,"pallets":true,"scan":true,"moves":false}'::jsonb,
+  permissions jsonb not null default '{"dashboard":false,"search":true,"locations":true,"pallets":true,"scan":true,"moves":false}'::jsonb,
   created_at timestamptz not null default now()
 );
-alter table public.profiles add column if not exists permissions jsonb not null default '{"dashboard":false,"search":true,"locations":false,"pallets":true,"scan":true,"moves":false}'::jsonb;
-update public.profiles set permissions = jsonb_set(permissions, '{scan}', 'true') where role = 'operator';
-alter table public.profiles alter column permissions set default '{"dashboard":false,"search":true,"locations":false,"pallets":true,"scan":true,"moves":false}'::jsonb;
+alter table public.profiles add column if not exists permissions jsonb not null default '{"dashboard":false,"search":true,"locations":true,"pallets":true,"scan":true,"moves":false}'::jsonb;
+update public.profiles set permissions = jsonb_set(jsonb_set(permissions, '{scan}', 'true'), '{locations}', 'true') where role = 'operator';
+alter table public.profiles alter column permissions set default '{"dashboard":false,"search":true,"locations":true,"pallets":true,"scan":true,"moves":false}'::jsonb;
 
 create or replace function public.is_admin()
 returns boolean
