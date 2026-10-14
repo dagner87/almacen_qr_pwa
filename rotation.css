@@ -4,3 +4,6 @@
 .rotation-table td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
 .rotation-table td:first-child{color:var(--muted);width:28px}
 .rotation-table small{color:var(--muted)}
+.qr-products{max-width:100%;text-align:left;margin-top:6px}
+.qr-products td,.qr-products th{padding:3px 6px;font-size:12px}
+.qr-content{max-height:70vh;overflow:auto}

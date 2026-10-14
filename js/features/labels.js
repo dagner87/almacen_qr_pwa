@@ -63,7 +63,7 @@ function printBarcodes() {
   window.print();
 }
 
-function qrRender(container, code) {
+function qrRender(container, code, size = 190) {
   container.innerHTML = '';
   if (typeof QRCode === 'undefined') {
     container.textContent = 'No se cargó el generador QR. Conéctate a Internet y vuelve a intentarlo.';
@@ -71,33 +71,47 @@ function qrRender(container, code) {
   }
   new QRCode(container, {
     text: code,
-    width: 190,
-    height: 190,
+    width: size,
+    height: size,
     colorDark: '#102a22',
     colorLight: '#ffffff',
-    correctLevel: QRCode.CorrectLevel.M,
+    correctLevel: QRCode.CorrectLevel.L,
   });
 }
 
-function openQr(code, title, qrValue = code) {
+function openQr(code, title, qrValue = code, extraHtml = '') {
   currentQr = { code, title };
   $('qrTitle').textContent = title;
   $('qrContent').innerHTML =
-    `<div id="qrImage"></div><strong>${escapeHtml(code)}</strong><p class="muted small">${escapeHtml(title)}</p>`;
-  qrRender($('qrContent').querySelector('#qrImage'), qrValue);
+    `<div id="qrImage"></div><strong>${escapeHtml(code)}</strong><p class="muted small">${escapeHtml(title)}</p>${extraHtml}`;
+  // Más contenido = más módulos: se agranda el QR para que siga siendo legible.
+  const bytes = new TextEncoder().encode(qrValue).length,
+    size = bytes > 700 ? 320 : bytes > 350 ? 260 : 190;
+  qrRender($('qrContent').querySelector('#qrImage'), qrValue, size);
   $('qrDialog').showModal();
 }
 
 function openPalletQr(p) {
-  const payload = {
-    type: 'pallet',
-    code: p.code,
-    locationCode: locLabel(p.locationId),
-    products: palletProducts(p).map((item) => ({
-      productCode: String(item.productCode || ''),
-      description: String(item.description || ''),
-      quantity: Number(item.quantity || 0),
-    })),
-  };
-  openQr(p.code, 'Etiqueta del pallet', `ALMACEN_PALLET:${JSON.stringify(payload)}`);
+  const products = palletProducts(p),
+    payload = {
+      type: 'pallet',
+      code: p.code,
+      locationCode: locLabel(p.locationId),
+      products: products.map((item) => ({
+        productCode: String(item.productCode || ''),
+        quantity: Number(item.quantity || 0),
+      })),
+    },
+    rows = products
+      .map(
+        (item) =>
+          `<tr><td>${escapeHtml(item.productCode)}</td><td>${escapeHtml(item.description || '')}</td><td>${Number(item.quantity || 0)}</td></tr>`,
+      )
+      .join(''),
+    detail = `<p class="small"><b>Ubicación:</b> ${escapeHtml(locLabel(p.locationId))} · <b>Total:</b> ${palletQuantity(p)} ${palletQuantityLabel(p)}</p>${
+      rows
+        ? `<table class="rotation-table qr-products"><thead><tr><th>Código</th><th>Detalle</th><th>Cant.</th></tr></thead><tbody>${rows}</tbody></table>`
+        : ''
+    }`;
+  openQr(p.code, 'Etiqueta del pallet', `ALMACEN_PALLET:${JSON.stringify(payload)}`, detail);
 }
