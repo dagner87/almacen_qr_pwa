@@ -64,10 +64,11 @@ create table if not exists public.profiles (
   user_id uuid primary key references auth.users(id) on delete cascade,
   email text not null,
   role text not null default 'operator' check (role in ('admin', 'operator')),
-  permissions jsonb not null default '{"dashboard":true,"locations":true,"pallets":true,"scan":true,"moves":true}'::jsonb,
+  permissions jsonb not null default '{"dashboard":false,"search":true,"locations":false,"pallets":false,"scan":false,"moves":false}'::jsonb,
   created_at timestamptz not null default now()
 );
-alter table public.profiles add column if not exists permissions jsonb not null default '{"dashboard":true,"locations":true,"pallets":true,"scan":true,"moves":true}'::jsonb;
+alter table public.profiles add column if not exists permissions jsonb not null default '{"dashboard":false,"search":true,"locations":false,"pallets":false,"scan":false,"moves":false}'::jsonb;
+alter table public.profiles alter column permissions set default '{"dashboard":false,"search":true,"locations":false,"pallets":false,"scan":false,"moves":false}'::jsonb;
 
 create or replace function public.is_admin()
 returns boolean
@@ -308,17 +309,17 @@ drop policy if exists "users can read own profile or admins all" on public.profi
 drop policy if exists "admins can update profiles" on public.profiles;
 
 create policy "authenticated can read racks" on public.racks
-for select to authenticated using (public.has_module_access('dashboard') or public.has_module_access('locations') or public.has_module_access('pallets') or public.has_module_access('scan') or public.has_module_access('moves'));
+for select to authenticated using (public.has_module_access('dashboard') or public.has_module_access('search') or public.has_module_access('locations') or public.has_module_access('pallets') or public.has_module_access('scan') or public.has_module_access('moves'));
 create policy "admins manage racks" on public.racks
 for all to authenticated using (public.is_admin()) with check (public.is_admin());
 
 create policy "authenticated can read locations" on public.locations
-for select to authenticated using (public.has_module_access('dashboard') or public.has_module_access('locations') or public.has_module_access('pallets') or public.has_module_access('scan') or public.has_module_access('moves'));
+for select to authenticated using (public.has_module_access('dashboard') or public.has_module_access('search') or public.has_module_access('locations') or public.has_module_access('pallets') or public.has_module_access('scan') or public.has_module_access('moves'));
 create policy "admins manage locations" on public.locations
 for all to authenticated using (public.is_admin()) with check (public.is_admin());
 
 create policy "authenticated can read pallets" on public.pallets
-for select to authenticated using (public.has_module_access('dashboard') or public.has_module_access('pallets') or public.has_module_access('scan'));
+for select to authenticated using (public.has_module_access('dashboard') or public.has_module_access('search') or public.has_module_access('pallets') or public.has_module_access('scan'));
 create policy "authenticated can write pallets" on public.pallets
 for insert to authenticated with check (public.has_module_access('pallets'));
 create policy "authenticated can update pallets" on public.pallets

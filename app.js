@@ -3,8 +3,8 @@ const DB_NAME='almacenQRDB', DB_VERSION=1;
 const AUTH_DISABLED = !(window.ALMACEN_SUPABASE_CONFIG && window.ALMACEN_SUPABASE_CONFIG.url && window.ALMACEN_SUPABASE_CONFIG.anonKey); // Modo local mientras no haya configuración válida de Supabase.
 let db, supabaseClient=null, scanEngine=null, scanRunning=false, pendingLocationId='', currentQr={code:'',title:''},currentUser=null,currentProfile=null,realtimeChannel=null,realtimeReady=false,realtimeFirstSubscription=true,passwordRecoveryUser=null;
 const sharedStores=['racks','locations','pallets','moves'];
-const MODULES=[['dashboard','Inicio'],['locations','Ubicaciones'],['pallets','Pallets'],['scan','Escanear'],['moves','Movimientos']];
-const DEFAULT_OPERATOR_PERMISSIONS={dashboard:true,locations:true,pallets:true,scan:true,moves:true};
+const MODULES=[['dashboard','Inicio'],['search','Buscar producto'],['locations','Ubicaciones'],['pallets','Pallets'],['scan','Escanear'],['moves','Movimientos']];
+const DEFAULT_OPERATOR_PERMISSIONS={dashboard:false,search:true,locations:false,pallets:false,scan:false,moves:false};
 const $=id=>document.getElementById(id);
 const state={racks:[],locations:[],pallets:[],moves:[],settings:{}};
 function uid(prefix){return prefix+'-'+Date.now().toString(36).toUpperCase()+'-'+Math.random().toString(36).slice(2,6).toUpperCase()}
@@ -250,7 +250,7 @@ function updateConnectivity(){
  document.querySelectorAll('[data-role="admin"]').forEach(element=>{element.hidden=currentProfile?.role!=='admin'});
  document.querySelectorAll('[data-module]').forEach(element=>{element.hidden=!canAccessModule(element.dataset.module)});
  if($('dashboardMoves'))$('dashboardMoves').hidden=!canAccessModule('moves');
- const activeView=document.querySelector('.view.active')?.id;if(activeView&&!['admin','settings'].includes(activeView)&&!canAccessModule(activeView))showView('dashboard');
+ const activeView=document.querySelector('.view.active')?.id;if(activeView&&!['admin','settings'].includes(activeView)&&!canAccessModule(activeView)){const firstAllowed=MODULES.map(([key])=>key).find(canAccessModule);if(firstAllowed)showView(firstAllowed)}
  document.querySelectorAll('[data-write]').forEach(element=>{element.disabled=!ready||(element.dataset.role==='admin'&&currentProfile?.role!=='admin')});
  if(currentProfile?.role!=='admin'&&$('admin').classList.contains('active'))showView('dashboard')
 }function renderAll(){
