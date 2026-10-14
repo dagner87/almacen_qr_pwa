@@ -1,6 +1,6 @@
 /* Almacén QR: primera versión. Datos locales en IndexedDB; sincronización opcional con Supabase. */
 const DB_NAME='almacenQRDB', DB_VERSION=1;
-const AUTH_DISABLED=true; // Modo local temporal mientras se corrige la conexión con Supabase.
+const AUTH_DISABLED = !(window.ALMACEN_SUPABASE_CONFIG && window.ALMACEN_SUPABASE_CONFIG.url && window.ALMACEN_SUPABASE_CONFIG.anonKey); // Modo local mientras no haya configuración válida de Supabase.
 let db, supabaseClient=null, scanEngine=null, scanRunning=false, pendingLocationId='', currentQr={code:'',title:''},currentUser=null,currentProfile=null,realtimeChannel=null,realtimeReady=false,realtimeFirstSubscription=true,passwordRecoveryUser=null;
 const sharedStores=['racks','locations','pallets','moves'];
 const MODULES=[['dashboard','Inicio'],['locations','Ubicaciones'],['pallets','Pallets'],['scan','Escanear'],['moves','Movimientos']];

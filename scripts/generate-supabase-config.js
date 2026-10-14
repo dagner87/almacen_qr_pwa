@@ -7,12 +7,11 @@ const config = {
 };
 
 if (!config.url || !config.anonKey) {
-  console.error('Supabase is not configured. Set SUPABASE_URL and SUPABASE_ANON_KEY in the Netlify environment before publishing.');
-  process.exit(1);
+  console.warn('Supabase no está configurado. Se genera un archivo local vacío; la app seguirá en modo local hasta definir SUPABASE_URL y SUPABASE_ANON_KEY.');
 }
 
-if (!/^https:\/\//.test(config.url)) {
-  console.error('SUPABASE_URL must be the HTTPS project URL shown in Supabase settings.');
+if (config.url && !/^https:\/\//.test(config.url)) {
+  console.error('SUPABASE_URL debe ser la URL HTTPS del proyecto de Supabase.');
   process.exit(1);
 }
 
