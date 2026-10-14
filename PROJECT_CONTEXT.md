@@ -57,14 +57,33 @@ PWA en español para administrar inventario de almacén, ubicaciones de racks, p
 ### Estado técnico
 
 - Los botones de búsqueda están dentro de sus campos y alineados a la derecha.
-- La caché del service worker es `almacen-qr-v28` en `sw.js`; incrementarla cuando cambien recursos que precarga.
+- La caché del service worker es `almacen-qr-v47` en `sw.js`; incrementarla con cada cambio de un archivo servido. Todo archivo nuevo debe estar en `CORE` de `sw.js` y en `index.html` (`node scripts/verify-assets.js` lo comprueba). La app se recarga sola al actualizarse el SW.
+- La app está modularizada en `js/` (core, domain, features, services); ya no existe un `app.js` único. Ver README.
+- Producción: Netlify (`https://capable-gnome-27d030.netlify.app`), rama `main`; rama de trabajo `dagner87-netlify-deployment`. Backend: Supabase (proyecto `etzkqrsboocffdvdhmcy`), esquema y RLS en `supabase.sql`.
+
+## Historial de modificaciones (más reciente al final)
+
+- Refactor modular de `app.js` a 19 archivos en `js/`; el build de Netlify corre `scripts/verify-assets.js`.
+- Sync: `syncToCloud` usa `select('*')` (error "racks.updatedAt does not exist") (v34).
+- `responsive.css`: barra de pestañas inferior en móvil, objetivos táctiles, diálogos tipo hoja (v35).
+- Operador puede crear pallets (`DEFAULT_OPERATOR_PERMISSIONS.pallets=true` y defaults de `supabase.sql`) (v36).
+- Rotación: `logMove` guarda `products`; `productRotation()` y panel "Mercadería con más rotación" en Movimientos con filtro 30/90/365/todo; fecha de creación y nº de movimientos en pallets; `rotation.css` (v37).
+- Trazabilidad: columnas `placed_by`, `placed_by_email`, `placed_at` y trigger `stamp_pallet_actor`; "Ubicado por … · fecha" en pallets (v38). Requiere ejecutar `supabase.sql` en el SQL Editor.
+- Menú del dashboard en columna izquierda en pantallas >620 px (v39).
+- Ubicación del pallet en un único campo autocompletable (`#palletLocationInput` + datalist; `fillLocationOptions` y `resolveLocationInput` en `locations.js`) (v40).
+- Carga inicial desde `Inventario MD (2).xlsx` a `carga-inicial-almacen.json` (1 rack R34, 11 ubicaciones, 11 pallets, 117 productos) importada con "Importar respaldo". Códigos repetidos en la misma ubicación se suman; se dejan separados los que están en varias ubicaciones.
+- QR de pallet compacto (código, ubicación y, por producto, código y cantidad), corrección `L`, tamaño dinámico y tabla HTML bajo el QR (v41).
+- Búsqueda: columna Pallet oculta para operador (v42); `locLabel` muestra `(id)` si no resuelve (v43); recarga automática del SW (v44).
+- Búsqueda consulta siempre Supabase (con "Cargando…", debounce 300 ms, fallback local sin conexión) (v45); operador sin columna Descripción (v46); mínimo 3 caracteres (v47).
+- Pendiente de confirmar por el usuario: ejecutar `supabase.sql`, crear usuario operador, revocar el token de Supabase y corregir la Site URL (de localhost a Netlify).
+- Ideas ofrecidas, no solicitadas: botón "Importar Excel" en la app; excluir "Misceláneos" del ranking de rotación.
 - Se corrigieron textos mal codificados en `app.js` y se revisaron patrones comunes de mojibake en archivos de aplicación.
 - No se han ejecutado pruebas en los últimos cambios.
 
 ## Preferencias del usuario
 
 - Comunicarse en español.
-- Si se cambia código, el usuario hará el commit manualmente. **No intentar crear commits**; indicar un título de commit cuando sea útil y dejarlo a su cargo.
+- Responder corto y en español. El usuario autoriza que el asistente haga commit y push (a `dagner87-netlify-deployment` y `main`) tras cada cambio verificado; incluir el trailer `Co-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>`.
 - Mantener los flujos descritos arriba: productos múltiples, descripción opcional, ubicaciones separadas salvo confirmación de consolidación, e información completa en el QR.
 
 ## Al retomar
@@ -72,7 +91,7 @@ PWA en español para administrar inventario de almacén, ubicaciones de racks, p
 1. Leer este archivo y revisar el estado actual de `app.js`, `styles.css` y `sw.js` antes de modificar.
 2. Si se cambia un archivo que sirve el service worker, incrementar la versión de caché en `sw.js`.
 3. No dar por hecho que el QR impreso/escaneado funciona visualmente solo por tener el payload en código; confirmar el recorrido esperado por el usuario si el siguiente problema reportado es de interfaz o dispositivo.
-4. En este entorno Git no está disponible como comando, y el usuario no quiere que se intente hacer commit. Tras modificar código, entregar un título de commit sugerido para que el usuario lo cree manualmente. Para una actualización de memoria/documentación no hace falta proponerlo.
+4. Tras modificar código: verificar (`scripts/verify-assets.js`), subir `CACHE`, hacer commit y push, y confirmar el despliegue en Netlify.
 
 ## Incidencias conocidas de inspección
 
