@@ -129,10 +129,10 @@ async function init() {
   $('levelFilter').onchange = renderLocations;
   $('palletSearch').oninput = renderPallets;
   $('palletStatusFilter').onchange = renderPallets;
-  $('productLookupInput').oninput = renderProductLookup;
+  $('productLookupInput').oninput = () => renderProductLookup();
   $('productLookupForm').onsubmit = (event) => {
     event.preventDefault();
-    renderProductLookup();
+    renderProductLookup(true);
   };
   $('palletSearchForm').onsubmit = (event) => {
     event.preventDefault();
