@@ -1,0 +1,66 @@
+/* Capa responsive "mobile-first" para uso como PWA en teléfono. Se carga al final. */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent}
+img,canvas,svg,video{max-width:100%}
+.item-title,.item-sub,.pill{overflow-wrap:anywhere}
+
+/* Tablet */
+@media(max-width:900px){
+  main{padding:14px}
+  .quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+/* Teléfono */
+@media(max-width:620px){
+  body{font-size:16px;padding-bottom:calc(66px + env(safe-area-inset-bottom))}
+  .topbar{position:sticky;top:0;z-index:20;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;gap:8px;flex-wrap:nowrap}
+  .topbar .eyebrow{display:none}
+  .topbar h1{font-size:19px;margin:0}
+  .topbar-actions{gap:6px;flex-wrap:nowrap;min-width:0}
+  #signedInAs{display:none}
+  .badge{font-size:11px;padding:4px 8px}
+  #signOutBtn{padding:8px 10px;font-size:12px;min-height:36px}
+
+  /* Navegación inferior fija, con desplazamiento horizontal si hay muchas pestañas */
+  .tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;margin:0;padding:6px 8px calc(6px + env(safe-area-inset-bottom));
+    background:#fff;border-top:1px solid var(--line);box-shadow:0 -4px 18px #10251c1a;gap:4px;scroll-snap-type:x proximity;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{flex:1 0 auto;min-width:72px;min-height:48px;padding:6px 10px;font-size:12px;border-radius:12px;background:transparent;scroll-snap-align:center}
+  .tab.active{background:var(--green);color:#fff}
+
+  /* Táctil: objetivos de 44px y 16px en campos para evitar el zoom de iOS */
+  input,select,textarea{font-size:16px;min-height:46px}
+  textarea{min-height:90px}
+  .primary,.secondary,.file-button{min-height:46px}
+  .mini{min-height:38px;padding:8px 12px;font-size:13px}
+  .icon-btn{width:42px;height:42px}
+  .item-actions{width:100%}
+  .item-actions .mini{flex:1}
+  .section-head{flex-wrap:wrap}
+  .section-head h2{font-size:21px}
+  .panel{padding:14px;border-radius:12px}
+
+  /* Diálogos como hoja inferior a pantalla casi completa */
+  dialog{width:100%;max-width:100%;max-height:92dvh;margin:auto 0 0;border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+  .product-row{grid-template-columns:1fr 1fr;align-items:end}
+  .product-row label:nth-child(2){grid-column:1 / -1}
+  .product-row .remove-product{grid-column:1 / -1}
+
+  .toast{bottom:calc(78px + env(safe-area-inset-bottom))}
+  footer{padding-bottom:20px}
+  #reader{max-width:100%}
+  .auth-gate{margin:0 auto;padding:12px}
+}
+
+/* Teléfonos pequeños */
+@media(max-width:380px){
+  .kpi-grid,.stats{grid-template-columns:1fr}
+  .tab{min-width:64px;font-size:11px}
+}
+
+/* Modo PWA instalado */
+@media(display-mode:standalone){
+  body{user-select:none;-webkit-user-select:none}
+  input,textarea{user-select:text;-webkit-user-select:text}
+}
