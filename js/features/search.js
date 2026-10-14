@@ -10,6 +10,10 @@ function renderProductLookup(immediate) {
   clearTimeout(lookupTimer);
   const seq = ++lookupSeq;
   if (!input.value.trim()) return paintProductLookup(state.pallets, state.locations);
+  if (input.value.trim().length < 3) {
+    target.innerHTML = '<p class="muted small">Escribe al menos 3 caracteres para buscar.</p>';
+    return;
+  }
   target.innerHTML = '<div class="empty">Cargando\u2026</div>';
   lookupTimer = setTimeout(
     async () => {
