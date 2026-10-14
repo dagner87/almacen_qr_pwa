@@ -63,7 +63,7 @@ async function syncToCloud() {
     for (const store of ['racks', 'locations', 'pallets']) {
       const localRows = await all(store);
       if (!localRows.length) continue;
-      const { data, error } = await supabaseClient.from(store).select('id,updatedAt,createdAt');
+      const { data, error } = await supabaseClient.from(store).select('*');
       if (error) throw error;
       const cloudById = new Map((data || []).map((row) => [row.id, row]));
       const changed = localRows.filter((row) => {
