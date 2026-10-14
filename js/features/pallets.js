@@ -107,7 +107,7 @@ async function savePallet(event) {
   if (!canWrite()) return;
   const id = $('palletId').value,
     old = state.pallets.find((item) => item.id === id),
-    locationId = $('palletLocation').value;
+    locationId = resolveLocationInput(true)?.id || '';
   if (!locationId) {
     toast('Selecciona una ubicación.');
     return;

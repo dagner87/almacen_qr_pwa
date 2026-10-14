@@ -3,7 +3,9 @@ $('printBarcodesBtn').onclick = openBarcodeDialog;
 $('barcodeRackFilter').onchange = renderBarcodes;
 $('printBarcodes').onclick = printBarcodes;
 $('addPalletProduct').onclick = () => addProductRow();
-$('palletLocationSearch').oninput = () => fillLocationOptions();
+$('palletLocationInput').oninput = () => resolveLocationInput();
+$('palletLocationInput').onchange = () => resolveLocationInput(true);
+$('palletLocationInput').onblur = () => resolveLocationInput(true);
 $('rotationRange').onchange = renderRotation;
 $('palletProductRows').addEventListener('change', (event) => {
   const input = event.target;

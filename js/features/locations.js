@@ -16,17 +16,39 @@ function renderLocations() {
     : '<div class="empty">No hay ubicaciones. Pulsa “Crear racks” para generar la estructura.</div>';
 }
 
+function sortedLocations() {
+  return [...state.locations].sort((a, b) =>
+    String(a.code).localeCompare(String(b.code), undefined, { numeric: true }),
+  );
+}
+
+// Un solo campo con autocompletado: el texto se resuelve a una ubicación y su id queda en #palletLocation.
 function fillLocationOptions(selected = '') {
-  const sel = $('palletLocation');
-  if (!sel) return;
-  const current = selected || sel.value,
-    term = ($('palletLocationSearch')?.value || '').trim().toLocaleLowerCase(),
-    list = [...state.locations]
-      .sort((a, b) => String(a.code).localeCompare(String(b.code), undefined, { numeric: true }))
-      .filter((l) => !term || String(l.code).toLocaleLowerCase().includes(term) || l.id === current);
-  sel.innerHTML =
-    `<option value="">${list.length ? 'Selecciona ubicación…' : 'Sin resultados'}</option>` +
-    list
-      .map((l) => `<option value="${l.id}" ${l.id === current ? 'selected' : ''}>${escapeHtml(l.code)}</option>`)
-      .join('');
+  const hidden = $('palletLocation'),
+    input = $('palletLocationInput'),
+    list = $('palletLocationList');
+  if (!hidden || !input || !list) return;
+  const currentId = selected || hidden.value,
+    current = state.locations.find((l) => l.id === currentId);
+  list.innerHTML = sortedLocations()
+    .map((l) => `<option value="${escapeHtml(l.code)}"></option>`)
+    .join('');
+  hidden.value = current ? current.id : '';
+  input.value = current ? current.code : selected ? '' : input.value;
+  resolveLocationInput();
+}
+
+function resolveLocationInput(complete = false) {
+  const input = $('palletLocationInput'),
+    term = input.value.trim().toLocaleLowerCase(),
+    all = sortedLocations();
+  let match = term ? all.find((l) => String(l.code).toLocaleLowerCase() === term) : null;
+  if (!match && complete && term) {
+    const candidates = all.filter((l) => String(l.code).toLocaleLowerCase().includes(term));
+    if (candidates.length === 1) match = candidates[0];
+  }
+  $('palletLocation').value = match ? match.id : '';
+  if (match && complete) input.value = match.code;
+  input.setCustomValidity(!term || match ? '' : 'Elige una ubicación existente de la lista.');
+  return match;
 }
