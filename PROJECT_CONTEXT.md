@@ -19,7 +19,8 @@ PWA en español para administrar inventario de almacén, ubicaciones de racks, p
 ## Archivos importantes
 
 - `index.html`: estructura de pantallas, diálogos y formularios.
-- `app.js`: datos, formularios, pallets, búsqueda, QR, escáner y sincronización.
+- `js/`: código de la aplicación dividido por responsabilidad (ver "Arquitectura" en `README.md`). Reemplaza al antiguo `app.js`.
+- `scripts/verify-assets.js`: comprueba en el build que `index.html` y `sw.js` referencien archivos existentes.
 - `styles.css`, `admin.css`, `barcodes.css`: apariencia general y estilos especializados.
 - `sw.js`: archivos precargados y número de versión de caché.
 - `supabase.sql`, `supabase-config.js`, `netlify.toml`: backend y despliegue.

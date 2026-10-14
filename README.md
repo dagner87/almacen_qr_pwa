@@ -68,5 +68,28 @@ Los permisos también están protegidos por políticas RLS y triggers de base de
 - La generación/lectura de QR depende de librerías externas durante la primera carga.
 - Capacidad de posición predeterminada = 1 pallet; la estructura permite listar varias posiciones por nivel.
 
+## Arquitectura
+
+La app es estática (sin compilación): scripts clásicos que comparten un ámbito global, cargados en orden desde `index.html`.
+
+```
+js/
+  core/        config, state, utils, db (IndexedDB), permissions, router
+  domain/      reglas de inventario (sin DOM propio de una pantalla)
+  features/    una pantalla o funcionalidad por archivo
+  services/    auth (Supabase) y sync (nube / tiempo real)
+  main.js      enlaza eventos y arranca la app; se carga al final
+```
+
+Reglas: `core` y `domain` no dependen de `features`; cada `feature` se ocupa de una sola pantalla; el acceso a Supabase vive solo en `services`.
+
+### Cómo agregar una pantalla nueva
+1. Crea `js/features/<nombre>.js` con su función `render<Nombre>()` y sus acciones.
+2. En `index.html`: añade la sección `<section id="<modulo>" class="view">`, su pestaña `<button class="tab" data-view="<modulo>" data-module="<modulo>">` y el `<script src="js/features/<nombre>.js">` antes de `js/services/auth.js`.
+3. En `js/core/config.js`: añade `['<modulo>','Etiqueta']` a `MODULES` y su valor en `DEFAULT_OPERATOR_PERMISSIONS` (`false` si es solo para administradores).
+4. Si debe pintarse con los datos, llama a su render desde `renderAll()` en `js/core/router.js`.
+5. Si necesita acceso en base de datos, añade el módulo a las políticas de `supabase.sql` y ejecútalo.
+6. Añade el archivo a `CORE` en `sw.js` y sube la versión de caché. El build (`scripts/verify-assets.js`) falla si olvidas alguno de estos pasos.
+
 ## Recomendación antes de usar en producción
 Prueba con un administrador, un operador, un rack y varios pallets en dispositivos reales. Verifica que el operador no pueda cambiar estructura/roles, que los movimientos se reflejen en todas las sesiones, que la auditoría indique el usuario correcto y que eliminar una ubicación elimine en cascada sus pallets asociados y conserve el historial.

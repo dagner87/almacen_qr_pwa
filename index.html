@@ -76,7 +76,7 @@
 </main>
 <dialog id="rackDialog"><form method="dialog" id="rackForm"><div class="dialog-head"><h2>Crear estructura de racks</h2><button class="icon-btn" value="cancel" aria-label="Cerrar">×</button></div><p class="muted small">Se crearán racks con 5 niveles y posiciones numeradas por nivel. Los códigos ya existentes no se duplican.</p><label>Primer número de rack<input id="rackStart" type="number" min="1" value="1" required></label><label>Cantidad de racks<input id="rackCount" type="number" min="1" max="100" value="20" required></label><label>Posiciones por nivel<input id="positionsPerLevel" type="number" min="1" max="20" value="3" required></label><div class="button-row"><button class="secondary" value="cancel">Cancelar</button><button class="primary" id="createRacks" value="default">Crear ubicaciones</button></div></form></dialog>
 <dialog id="barcodeDialog"><div class="dialog-head"><h2>Códigos de barras de ubicaciones</h2><button class="icon-btn" data-close="barcodeDialog" aria-label="Cerrar">×</button></div><p class="muted small">Etiquetas Code 128 para imprimir y pegar en cada posición. El texto conserva el formato R01-N02-P03.</p><label class="barcode-controls">Rack<select id="barcodeRackFilter"><option value="">Todos los racks</option></select></label><div id="barcodePrintArea" class="barcode-grid"></div><div class="button-row barcode-controls"><button class="secondary" data-close="barcodeDialog">Cerrar</button><button class="primary" id="printBarcodes">Imprimir etiquetas</button></div></dialog>
-<dialog id="palletDialog"><form id="palletForm"><div class="dialog-head"><h2 id="palletDialogTitle">Nuevo pallet</h2><button type="button" class="icon-btn" data-close="palletDialog">×</button></div><input type="hidden" id="palletId"><label>Ubicación<select id="palletLocation" required></select></label><section class="product-editor"><div class="product-editor-head"><strong>Productos del pallet</strong><button type="button" class="mini" id="addPalletProduct">+ Agregar producto</button></div><p class="muted small">Agrega cada c&oacute;digo, descripci&oacute;n y cantidad en su propia fila. Si ya existe en otro pallet, al guardar puedes unificarlo o mantener ambas ubicaciones.</p><div id="palletProductRows" class="product-rows"></div></section><label>Notas (opcional)<textarea id="palletNotes" rows="2" placeholder="Detalle adicional…"></textarea></label><div class="button-row"><button type="button" class="secondary" id="printPalletQr">Ver / imprimir QR</button><button type="submit" class="primary">Guardar pallet</button></div><div id="palletQrPreview" class="qr-preview"></div></form></dialog>
+<dialog id="palletDialog"><form id="palletForm"><div class="dialog-head"><h2 id="palletDialogTitle">Nuevo pallet</h2><button type="button" class="icon-btn" data-close="palletDialog">×</button></div><input type="hidden" id="palletId"><label>Ubicación<input id="palletLocationSearch" type="search" placeholder="Buscar rack o posición (ej. R01)" autocomplete="off" aria-label="Buscar ubicación"><select id="palletLocation" required></select></label><section class="product-editor"><div class="product-editor-head"><strong>Productos del pallet</strong><button type="button" class="mini" id="addPalletProduct">+ Agregar producto</button></div><p class="muted small">Agrega cada c&oacute;digo, descripci&oacute;n y cantidad en su propia fila. Si ya existe en otro pallet, al guardar puedes unificarlo o mantener ambas ubicaciones.</p><div id="palletProductRows" class="product-rows"></div></section><label>Notas (opcional)<textarea id="palletNotes" rows="2" placeholder="Detalle adicional…"></textarea></label><div class="button-row"><button type="button" class="secondary" id="printPalletQr">Ver / imprimir QR</button><button type="submit" class="primary">Guardar pallet</button></div><div id="palletQrPreview" class="qr-preview"></div></form></dialog>
 <dialog id="qrDialog"><div class="dialog-head"><h2 id="qrTitle">Código QR</h2><button class="icon-btn" data-close="qrDialog">×</button></div><div id="qrContent" class="qr-content"></div><div class="button-row"><button class="secondary" id="printQr">Imprimir etiqueta</button><button class="primary" data-close="qrDialog">Listo</button></div></dialog>
 <div id="toast" role="status" class="toast"></div>
 <footer>Almacén QR · Primera versión · Verifica siempre la ubicación física antes de mover mercancía.</footer>
@@ -85,5 +85,23 @@
 <script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
-<script src="app.js"></script>
+<script src="js/core/config.js"></script>
+<script src="js/core/state.js"></script>
+<script src="js/core/utils.js"></script>
+<script src="js/core/db.js"></script>
+<script src="js/core/permissions.js"></script>
+<script src="js/core/router.js"></script>
+<script src="js/domain/inventory.js"></script>
+<script src="js/features/dashboard.js"></script>
+<script src="js/features/search.js"></script>
+<script src="js/features/locations.js"></script>
+<script src="js/features/labels.js"></script>
+<script src="js/features/pallets.js"></script>
+<script src="js/features/moves.js"></script>
+<script src="js/features/scan.js"></script>
+<script src="js/features/admin.js"></script>
+<script src="js/features/data-tools.js"></script>
+<script src="js/services/auth.js"></script>
+<script src="js/services/sync.js"></script>
+<script src="js/main.js"></script>
 </body></html>
