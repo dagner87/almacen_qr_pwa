@@ -11,7 +11,7 @@ function palletProducts(p) {
   return Array.isArray(p?.products) ? p.products : [];
 }
 
-const ROTATION_ACTIONS = ['Alta de pallet', 'Movimiento', 'Actualización de stock'];
+const ROTATION_ACTIONS = ['Alta de pallet', 'Movimiento', 'Actualización de stock', 'Entrada de stock', 'Salida de stock', 'Ajuste de stock'];
 
 function formatDateTime(value) {
   const date = value ? new Date(value) : null;

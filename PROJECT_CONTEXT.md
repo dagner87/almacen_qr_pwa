@@ -75,6 +75,8 @@ PWA en español para administrar inventario de almacén, ubicaciones de racks, p
 - QR de pallet compacto (código, ubicación y, por producto, código y cantidad), corrección `L`, tamaño dinámico y tabla HTML bajo el QR (v41).
 - Búsqueda: columna Pallet oculta para operador (v42); `locLabel` muestra `(id)` si no resuelve (v43); recarga automática del SW (v44).
 - Búsqueda consulta siempre Supabase (con "Cargando…", debounce 300 ms, fallback local sin conexión) (v45); operador sin columna Descripción (v46); mínimo 3 caracteres (v47).
+- Búsqueda: mínimo 3 caracteres (v47); al agregar producto en el pallet se desplaza a la nueva fila (v48); operador con `scan` (v49) y `locations` + botón "Agregar pallet" por ubicación (v50).
+- Menú **Inventario** (solo admin, v51): cuadrícula editable tipo Excel (`js/features/inventory-grid.js`, `inventory.css`). Columnas Stock / + Entrada / − Salida / Nuevo stock (editable); Enter y flechas navegan; filtro, exportar CSV, guardar/descartar y panel de últimas entradas y salidas. El trigger `record_pallet_activity` calcula las diferencias por producto y registra `Entrada de stock`, `Salida de stock` o `Ajuste de stock` (requiere ejecutar `supabase.sql`). `ADMIN_VIEWS` en `config.js` lista las vistas solo admin.
 - Pendiente de confirmar por el usuario: ejecutar `supabase.sql`, crear usuario operador, revocar el token de Supabase y corregir la Site URL (de localhost a Netlify).
 - Ideas ofrecidas, no solicitadas: botón "Importar Excel" en la app; excluir "Misceláneos" del ranking de rotación.
 - Se corrigieron textos mal codificados en `app.js` y se revisaron patrones comunes de mojibake en archivos de aplicación.

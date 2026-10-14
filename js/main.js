@@ -129,6 +129,7 @@ async function init() {
   $('levelFilter').onchange = renderLocations;
   $('palletSearch').oninput = renderPallets;
   $('palletStatusFilter').onchange = renderPallets;
+  bindInventoryGrid();
   $('productLookupInput').oninput = () => renderProductLookup();
   $('productLookupForm').onsubmit = (event) => {
     event.preventDefault();

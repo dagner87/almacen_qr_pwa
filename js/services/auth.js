@@ -170,14 +170,14 @@ function updateConnectivity() {
   });
   if ($('dashboardMoves')) $('dashboardMoves').hidden = !canAccessModule('moves');
   const activeView = document.querySelector('.view.active')?.id;
-  if (activeView && !['admin', 'settings'].includes(activeView) && !canAccessModule(activeView)) {
+  if (activeView && !ADMIN_VIEWS.includes(activeView) && !canAccessModule(activeView)) {
     const firstAllowed = MODULES.map(([key]) => key).find(canAccessModule);
     if (firstAllowed) showView(firstAllowed);
   }
   document.querySelectorAll('[data-write]').forEach((element) => {
     element.disabled = !ready || (element.dataset.role === 'admin' && currentProfile?.role !== 'admin');
   });
-  if (currentProfile?.role !== 'admin' && $('admin').classList.contains('active')) showView('dashboard');
+  if (currentProfile?.role !== 'admin' && ADMIN_VIEWS.some((view) => $(view).classList.contains('active'))) showView('dashboard');
 }
 
 async function activateSession(user) {

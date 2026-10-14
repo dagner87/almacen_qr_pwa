@@ -1,4 +1,4 @@
-﻿/* Constantes de configuración y catálogo de módulos (pantallas). */
+/* Constantes de configuración y catálogo de módulos (pantallas). */
 const DB_NAME = 'almacenQRDB',
   DB_VERSION = 1;
 
@@ -27,3 +27,4 @@ const DEFAULT_OPERATOR_PERMISSIONS = {
   scan: true,
   moves: false,
 };
+const ADMIN_VIEWS = ['admin', 'settings', 'inventory'];

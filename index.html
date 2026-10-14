@@ -1,9 +1,9 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#123b32"><meta name="description" content="Control de ubicaciones y pallets mediante códigos QR y de barras">
-<link rel="manifest" href="manifest.json"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="admin.css"><link rel="stylesheet" href="barcodes.css"><link rel="stylesheet" href="dashboard.css"><link rel="stylesheet" href="rotation.css"><link rel="stylesheet" href="responsive.css">
+<link rel="manifest" href="manifest.json"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="admin.css"><link rel="stylesheet" href="barcodes.css"><link rel="stylesheet" href="dashboard.css"><link rel="stylesheet" href="rotation.css"><link rel="stylesheet" href="responsive.css"><link rel="stylesheet" href="inventory.css">
 <title>Almacén QR</title>
 </head>
 <body>
@@ -17,7 +17,7 @@
 </section>
 <main id="appContent">
 <nav class="tabs" aria-label="Secciones">
-<button class="tab active" data-view="dashboard" data-module="dashboard">Inicio</button><button class="tab" data-view="search" data-module="search">Buscar producto</button><button class="tab" data-view="locations" data-module="locations">Ubicaciones</button><button class="tab" data-view="pallets" data-module="pallets">Pallets</button><button class="tab" data-view="scan" data-module="scan">Escanear</button><button class="tab" data-view="admin" data-role="admin" hidden>Administrar</button><button class="tab" data-view="settings" data-role="admin" hidden>Datos / Sync</button><button class="tab" data-view="moves" data-module="moves">Movimientos</button>
+<button class="tab active" data-view="dashboard" data-module="dashboard">Inicio</button><button class="tab" data-view="search" data-module="search">Buscar producto</button><button class="tab" data-view="locations" data-module="locations">Ubicaciones</button><button class="tab" data-view="pallets" data-module="pallets">Pallets</button><button class="tab" data-view="inventory" data-role="admin" hidden>Inventario</button><button class="tab" data-view="scan" data-module="scan">Escanear</button><button class="tab" data-view="admin" data-role="admin" hidden>Administrar</button><button class="tab" data-view="settings" data-role="admin" hidden>Datos / Sync</button><button class="tab" data-view="moves" data-module="moves">Movimientos</button>
 </nav>
 <section id="dashboard" class="view active">
 <div class="dash-hero"><div><p class="eyebrow">PANEL DE CONTROL</p><h2 id="dashGreeting">Resumen del almacén</h2><p>Ubicaciones, pallets y existencias en tiempo real.</p></div><div class="dash-hero-meta"><span id="dashDate"></span><button class="dash-cta" data-goto="search" data-module="search">Buscar producto</button></div></div>
@@ -52,6 +52,7 @@
 <form id="palletSearchForm" class="filters"><span class="search-field pallet-search-field"><input id="palletSearch" type="search" placeholder="Buscar ID, c&oacute;digo o descripci&oacute;n" aria-label="Buscar por ID, c&oacute;digo o descripci&oacute;n"><button class="secondary search-submit" type="submit" aria-label="Buscar" title="Buscar"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg></button></span><select id="palletStatusFilter"><option value="">Todos los estados</option><option value="active">Activo</option><option value="empty">Vac&iacute;o</option><option value="retired">Baja</option></select></form>
 <div id="palletList" class="list"></div>
 </section>
+<section id="inventory" class="view"><div class="section-head"><div><p class="eyebrow">CONTROL DE EXISTENCIAS</p><h2>Inventario</h2></div><div class="inventory-actions"><button class="secondary" id="inventoryExport" type="button">Exportar CSV</button><button class="secondary" id="inventoryDiscard" type="button" disabled>Descartar</button><button class="primary" id="inventorySave" type="button" disabled>Guardar cambios</button></div></div><p class="muted">Escribe una entrada (+) o una salida (−), o edita directamente el nuevo stock. Usa Enter o las flechas para bajar de fila. Cada guardado queda registrado en Movimientos.</p><div class="inventory-toolbar"><input id="inventorySearch" type="search" placeholder="Filtrar por código, descripción, pallet o ubicación" autocomplete="off"><span id="inventorySummary" class="muted small"></span></div><div id="inventoryGrid" class="inventory-grid-wrap"></div><div class="panel"><h3>Últimas entradas y salidas</h3><div id="inventoryMoves" class="rotation-wrap"></div></div></section>
 <section id="scan" class="view">
 <div class="section-head"><div><p class="eyebrow">LECTURA DE CÓDIGOS</p><h2>Escanear código</h2></div></div>
 <p class="muted">Escanea una ubicación y pulsa «Asociar pallet aquí»; después escanea el QR o código del pallet para vincularlo, con confirmación antes de moverlo. También puedes consultar un código manualmente.</p>
@@ -98,6 +99,7 @@
 <script src="js/features/labels.js"></script>
 <script src="js/features/pallets.js"></script>
 <script src="js/features/moves.js"></script>
+<script src="js/features/inventory-grid.js"></script>
 <script src="js/features/scan.js"></script>
 <script src="js/features/admin.js"></script>
 <script src="js/features/data-tools.js"></script>

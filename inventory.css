@@ -1,0 +1,22 @@
+/* Cuadrícula editable tipo hoja de cálculo (pantalla Inventario). */
+.inventory-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.inventory-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 12px 0; }
+.inventory-toolbar input[type="search"] { flex: 1 1 260px; max-width: 420px; }
+.inventory-grid-wrap { max-height: calc(100vh - 340px); min-height: 220px; overflow: auto; border: 1px solid #c9d1dc; border-radius: 6px; background: #fff; }
+.inventory-grid { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.inventory-grid th, .inventory-grid td { border: 1px solid #d6dce5; padding: 0 8px; height: 36px; white-space: nowrap; text-align: left; }
+.inventory-grid thead th { position: sticky; top: 0; z-index: 2; background: #eef2f7; font-weight: 700; }
+.inventory-grid th.in { color: #15703a; }
+.inventory-grid th.out { color: #b3261e; }
+.inventory-grid .num { text-align: right; }
+.inventory-grid td.desc { white-space: normal; min-width: 160px; max-width: 280px; }
+.inventory-grid tbody tr:nth-child(even) { background: #fafbfd; }
+.inventory-grid tbody tr.dirty { background: #fff8d6; }
+.inventory-grid tbody tr.invalid { background: #fde4e1; }
+.inventory-grid td.cell { padding: 0; width: 110px; }
+.inventory-grid td.cell input { display: block; width: 100%; min-height: 34px; height: 34px; margin: 0; padding: 0 8px; border: 0; border-radius: 0; background: transparent; text-align: right; box-shadow: none; }
+.inventory-grid td.cell input:focus { outline: 2px solid #2563eb; outline-offset: -2px; background: #fff; }
+@media (max-width: 620px) {
+  .inventory-grid-wrap { max-height: calc(100vh - 380px); }
+  .inventory-grid td.cell { width: 92px; }
+}
