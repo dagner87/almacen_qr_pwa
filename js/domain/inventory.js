@@ -1,6 +1,6 @@
 /* Reglas y cálculos del inventario (ubicaciones, pallets, productos). */
 function locLabel(id) {
-  return state.locations.find((x) => x.id === id)?.code || 'Sin ubicación';
+  return state.locations.find((x) => x.id === id)?.code || (id ? `(${id})` : 'Sin ubicación');
 }
 
 function activePalletsAt(locId) {
