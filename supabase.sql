@@ -44,6 +44,13 @@ alter table public.pallets add column if not exists created_by uuid;
 alter table public.pallets add column if not exists created_by_email text;
 alter table public.pallets add column if not exists updated_by uuid;
 alter table public.pallets add column if not exists updated_by_email text;
+alter table public.pallets add column if not exists placed_by uuid;
+alter table public.pallets add column if not exists placed_by_email text;
+alter table public.pallets add column if not exists placed_at timestamptz;
+update public.pallets set placed_by = coalesce(placed_by, updated_by, created_by),
+  placed_by_email = coalesce(placed_by_email, updated_by_email, created_by_email),
+  placed_at = coalesce(placed_at, "updatedAt", "createdAt")
+where placed_at is null;
 
 create table if not exists public.moves (
   id text primary key,
@@ -143,6 +150,15 @@ begin
     end if;
     new.updated_by := auth.uid();
     new.updated_by_email := current_email;
+    if tg_op = 'INSERT' or old."locationId" is distinct from new."locationId" then
+      new.placed_by := auth.uid();
+      new.placed_by_email := current_email;
+      new.placed_at := now();
+    else
+      new.placed_by := old.placed_by;
+      new.placed_by_email := old.placed_by_email;
+      new.placed_at := old.placed_at;
+    end if;
   end if;
 
   if new."locationId" is not null and not exists (
