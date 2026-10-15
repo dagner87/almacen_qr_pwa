@@ -3,8 +3,13 @@ function locLabel(id) {
   return state.locations.find((x) => x.id === id)?.code || (id ? `(${id})` : 'Sin ubicación');
 }
 
+// Un pallet sin unidades no ocupa la posición.
+function isOccupyingPallet(p) {
+  return p.status === 'active' && palletQuantity(p) > 0;
+}
+
 function activePalletsAt(locId) {
-  return state.pallets.filter((p) => p.locationId === locId && p.status === 'active');
+  return state.pallets.filter((p) => p.locationId === locId && isOccupyingPallet(p));
 }
 
 function palletProducts(p) {

@@ -12,7 +12,7 @@ function renderDashboard() {
 }
 
 function renderDashboardPanels() {
-  const active = state.pallets.filter((p) => p.status === 'active'),
+  const active = state.pallets.filter(isOccupyingPallet),
     usedIds = new Set(active.map((p) => p.locationId).filter(Boolean)),
     total = state.locations.length,
     used = state.locations.filter((l) => usedIds.has(l.id)).length,
