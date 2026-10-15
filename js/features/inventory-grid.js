@@ -152,9 +152,40 @@ function describeStockChange(lines) {
     .join(', ');
 }
 
-async function saveInventoryChanges() {
+let inventorySaving = false;
+let inventoryResave = false;
+
+// Al salir de una celda se guarda sola; si ya hay un guardado en curso, se repite al terminar.
+async function autoSaveInventory() {
+  if (!inventoryPending.size || $('inventoryGrid').querySelector('tr.invalid')) return;
+  if (inventorySaving) {
+    inventoryResave = true;
+    return;
+  }
+  inventorySaving = true;
+  const active = document.activeElement,
+    focusKey = active?.closest?.('tr[data-key]')?.dataset.key,
+    focusField = active?.dataset?.f;
+  try {
+    await saveInventoryChanges(true);
+  } finally {
+    inventorySaving = false;
+    if (focusKey && focusField) {
+      const row = [...$('inventoryGrid').querySelectorAll('tr[data-key]')].find((tr) => tr.dataset.key === focusKey);
+      const input = row?.querySelector(`[data-f="${focusField}"]`);
+      if (input && document.activeElement !== input && !document.activeElement?.closest?.('#inventoryGrid')) input.focus();
+    }
+    if (inventoryResave) {
+      inventoryResave = false;
+      autoSaveInventory();
+    }
+  }
+}
+
+async function saveInventoryChanges(auto = false) {
   if (!canWrite(true)) return;
-  const changes = [...inventoryPending.values()].filter((change) => change.in || change.out);
+  const snapshot = [...inventoryPending.entries()].filter(([, change]) => change.in || change.out),
+    changes = snapshot.map(([, change]) => change);
   if (!changes.length) return;
   const byPallet = new Map();
   for (const change of changes) {
@@ -203,7 +234,7 @@ async function saveInventoryChanges() {
       },
     });
   }
-  if (zeroed && !confirm(`${zeroed} l\u00ednea(s) quedar\u00e1n en 0 y se quitar\u00e1n de su pallet. \u00bfContinuar?`)) return;
+  if (zeroed && !auto && !confirm(`${zeroed} l\u00ednea(s) quedar\u00e1n en 0 y se quitar\u00e1n de su pallet. \u00bfContinuar?`)) return;
   try {
     let rows = updates.map((update) => update.row);
     if (!AUTH_DISABLED) {
@@ -221,11 +252,14 @@ async function saveInventoryChanges() {
           action = gained && lost ? 'Ajuste de stock' : gained ? 'Entrada de stock' : 'Salida de stock';
         await logMove(action, pallet.code, pallet.locationId, pallet.locationId, describeStockChange(lines), row.products);
       }
-    inventoryPending.clear();
+    for (const [key, saved] of snapshot) {
+      const now = inventoryPending.get(key);
+      if (now && now.in === saved.in && now.out === saved.out) inventoryPending.delete(key);
+    }
     await loadState();
     if (!AUTH_DISABLED) syncFromCloud().catch(() => {});
     notifyStockChange();
-    toast(AUTH_DISABLED ? 'Inventario guardado en este dispositivo.' : 'Inventario actualizado.');
+    toast(AUTH_DISABLED ? 'Inventario guardado en este dispositivo.' : 'Inventario guardado.');
   } catch (error) {
     toast('No se pudo guardar el inventario: ' + error.message);
   }
@@ -288,9 +322,12 @@ function bindInventoryGrid() {
   });
   grid.addEventListener('input', onInventoryInput);
   grid.addEventListener('keydown', onInventoryKeydown);
+  grid.addEventListener('change', (event) => {
+    if (event.target.dataset?.f) autoSaveInventory();
+  });
   grid.addEventListener('focusin', (event) => event.target.select?.());
   $('inventorySearch').oninput = renderInventory;
-  $('inventorySave').onclick = saveInventoryChanges;
+  $('inventorySave').onclick = () => saveInventoryChanges();
   $('inventoryDiscard').onclick = () => {
     inventoryPending.clear();
     renderInventory();
