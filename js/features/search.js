@@ -22,8 +22,8 @@ function renderProductLookup(immediate) {
       if (supabaseClient && currentProfile && navigator.onLine) {
         try {
           const [p, l] = await Promise.all([
-            supabaseClient.from('pallets').select('*').eq('status', 'active'),
-            supabaseClient.from('locations').select('*')
+            fetchAllRows('pallets', (query) => query.eq('status', 'active')),
+            fetchAllRows('locations')
           ]);
           if (!p.error && !l.error) {
             pallets = p.data || [];

@@ -1,4 +1,17 @@
 /* Sincronización con la nube y tiempo real. */
+/* Supabase devuelve como máximo 1000 filas por consulta: se pide por páginas. */
+async function fetchAllRows(table, build = (query) => query) {
+  const rows = [],
+    PAGE = 1000;
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await build(supabaseClient.from(table).select('*'))
+      .order(table === 'settings' ? 'key' : 'id')
+      .range(from, from + PAGE - 1);
+    if (error) return { data: null, error };
+    rows.push(...(data || []));
+    if (!data || data.length < PAGE) return { data: rows, error: null };
+  }
+}
 async function reconcileRealtime() {
   try {
     await syncFromCloud();
@@ -63,7 +76,7 @@ async function syncToCloud() {
     for (const store of ['racks', 'locations', 'pallets']) {
       const localRows = await all(store);
       if (!localRows.length) continue;
-      const { data, error } = await supabaseClient.from(store).select('*');
+      const { data, error } = await fetchAllRows(store);
       if (error) throw error;
       const cloudById = new Map((data || []).map((row) => [row.id, row]));
       const changed = localRows.filter((row) => {
@@ -122,7 +135,7 @@ async function syncFromCloud() {
   if (!supabaseClient || !currentProfile) return;
   const remoteByStore = {};
   for (const store of sharedStores) {
-    const { data, error } = await supabaseClient.from(store).select('*');
+    const { data, error } = await fetchAllRows(store);
     if (error) throw error;
     remoteByStore[store] = data || [];
   }
