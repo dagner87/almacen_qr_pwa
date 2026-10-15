@@ -41,14 +41,10 @@ async function handleCode(code) {
       };
       await startScan();
     };
-    $('newAtLocation').onclick = () => {
-      showPalletDialog();
-      fillLocationOptions(location.id);
-      $('palletLocation').value = location.id;
-    };
+    $('newAtLocation').onclick = () => showPalletDialog(null, location.id);
     $('labelLocation').onclick = () => openQr(location.code, 'Etiqueta de ubicación');
   } else {
-    let pallet = scannedPallet || state.pallets.find((item) => item.code.toLowerCase() === code.toLowerCase());
+    let pallet = state.pallets.find((item) => item.code.toLowerCase() === code.toLowerCase()) || scannedPallet;
     if (pallet && pendingLocationId) {
       const destination = state.locations.find((item) => item.id === pendingLocationId);
       if (!destination) {
