@@ -1,4 +1,4 @@
-﻿const CACHE='almacen-qr-v52';
+﻿const CACHE='almacen-qr-v53';
 const CORE=['./','./index.html','./styles.css','./admin.css','./barcodes.css','./dashboard.css','./rotation.css','./responsive.css','./inventory.css','./login-bg.svg','./js/core/config.js','./js/core/state.js','./js/core/utils.js','./js/core/db.js','./js/core/permissions.js','./js/core/router.js','./js/domain/inventory.js','./js/features/dashboard.js','./js/features/search.js','./js/features/locations.js','./js/features/labels.js','./js/features/pallets.js','./js/features/moves.js','./js/features/inventory-grid.js','./js/features/scan.js','./js/features/admin.js','./js/features/data-tools.js','./js/services/auth.js','./js/services/sync.js','./js/main.js','./manifest.json'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});

@@ -67,16 +67,29 @@ img,canvas,svg,video{max-width:100%}
 
 /* Escritorio y tablet: menú en columna lateral izquierda */
 @media(min-width:621px){
-  main{max-width:1280px;display:grid;grid-template-columns:210px minmax(0,1fr);column-gap:22px;align-items:start}
+  main{max-width:none;width:100%;display:grid;grid-template-columns:210px minmax(0,1fr);column-gap:22px;align-items:start}
   main>:not(.tabs){grid-column:2}
   .tabs{grid-column:1;grid-row:1 / span 30;position:sticky;top:16px;flex-direction:column;overflow:visible;gap:4px;padding:10px;
     background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 4px 18px #10251c0d}
   .tab{width:100%;text-align:left;padding:12px 14px;border-radius:10px;background:transparent;font-size:14px}
   .tab:hover:not(.active){background:#eef3ef}
   .tab.active{background:var(--green);color:#fff}
-  .topbar{padding-left:max(18px,calc((100% - 1280px)/2));padding-right:max(18px,calc((100% - 1280px)/2))}
+  .topbar{padding-left:24px;padding-right:24px}
 }
 @media(min-width:621px) and (max-width:900px){
   main{grid-template-columns:168px minmax(0,1fr);column-gap:14px}
   .tab{padding:11px 10px;font-size:13px}
+}
+
+/* Escritorio: el contenido usa todo el ancho y las tarjetas se reparten solas */
+@media(min-width:621px){
+  main{padding:20px 24px}
+  footer{max-width:none}
+  .dash-grid{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+  .quick-grid{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+}
+@media(min-width:1500px){
+  .kpi-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+  .dash-grid{gap:18px}
+  .kpi strong{font-size:32px}
 }
