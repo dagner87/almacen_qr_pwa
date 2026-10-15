@@ -221,6 +221,7 @@ async function saveInventoryChanges() {
       }
     inventoryPending.clear();
     await loadState();
+    notifyStockChange();
     toast(AUTH_DISABLED ? 'Inventario guardado en este dispositivo.' : 'Inventario actualizado.');
   } catch (error) {
     toast('No se pudo guardar el inventario: ' + error.message);

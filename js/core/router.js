@@ -22,6 +22,7 @@ function renderAll() {
   renderPallets();
   fillLocationOptions();
   renderRecent();
+  renderLowStock();
   renderMoves();
   renderProductLookup();
   if ($('inventory')?.classList.contains('active') && !inventoryPending.size) renderInventory();

@@ -243,6 +243,7 @@ async function savePallet(event) {
       }
     }
     await loadState();
+    notifyStockChange();
     $('palletDialog').close();
     toast(
       mergeSummary.length
@@ -335,6 +336,7 @@ async function deletePallet(id) {
       await logMove('Baja de pallet', pallet.code, pallet.locationId, '', 'Eliminado desde la administración');
     await del('pallets', id);
     await loadState();
+    notifyStockChange();
     toast('Pallet eliminado.');
   } catch (error) {
     toast('No se pudo eliminar el pallet: ' + error.message);

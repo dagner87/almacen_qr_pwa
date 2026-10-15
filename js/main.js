@@ -131,6 +131,7 @@ async function init() {
   $('palletSearch').oninput = renderPallets;
   $('palletStatusFilter').onchange = renderPallets;
   bindInventoryGrid();
+  bindStockLimits();
   $('productLookupInput').oninput = () => renderProductLookup();
   $('productLookupForm').onsubmit = (event) => {
     event.preventDefault();

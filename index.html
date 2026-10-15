@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#123b32"><meta name="description" content="Control de ubicaciones y pallets mediante códigos QR y de barras">
-<link rel="manifest" href="manifest.json"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="admin.css"><link rel="stylesheet" href="barcodes.css"><link rel="stylesheet" href="dashboard.css"><link rel="stylesheet" href="rotation.css"><link rel="stylesheet" href="responsive.css"><link rel="stylesheet" href="inventory.css">
+<link rel="manifest" href="manifest.json"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="admin.css"><link rel="stylesheet" href="barcodes.css"><link rel="stylesheet" href="dashboard.css"><link rel="stylesheet" href="rotation.css"><link rel="stylesheet" href="responsive.css"><link rel="stylesheet" href="inventory.css"><link rel="stylesheet" href="stock.css">
 <title>Almacén QR</title>
 </head>
 <body>
@@ -17,7 +17,7 @@
 </section>
 <main id="appContent">
 <nav class="tabs" aria-label="Secciones">
-<button class="tab active" data-view="dashboard" data-module="dashboard">Inicio</button><button class="tab" data-view="search" data-module="search">Buscar producto</button><button class="tab" data-view="locations" data-module="locations">Ubicaciones</button><button class="tab" data-view="pallets" data-module="pallets">Pallets</button><button class="tab" data-view="inventory" data-role="admin" hidden>Inventario</button><button class="tab" data-view="scan" data-module="scan">Escanear</button><button class="tab" data-view="admin" data-role="admin" hidden>Administrar</button><button class="tab" data-view="settings" data-role="admin" hidden>Datos / Sync</button><button class="tab" data-view="moves" data-module="moves">Movimientos</button>
+<button class="tab active" data-view="dashboard" data-module="dashboard">Inicio</button><button class="tab" data-view="search" data-module="search">Buscar producto</button><button class="tab" data-view="locations" data-module="locations">Ubicaciones</button><button class="tab" data-view="pallets" data-module="pallets">Pallets</button><button class="tab" data-view="inventory" data-role="admin" hidden>Inventario</button><button class="tab" data-view="scan" data-module="scan">Escanear</button><button class="tab" data-view="admin" data-role="admin" hidden>Administrar</button><button class="tab" data-view="settings" data-role="admin" hidden>Configuración</button><button class="tab" data-view="moves" data-module="moves">Movimientos</button>
 </nav>
 <section id="dashboard" class="view active">
 <div class="dash-hero"><div><p class="eyebrow">PANEL DE CONTROL</p><h2 id="dashGreeting">Resumen del almacén</h2><p>Ubicaciones, pallets y existencias en tiempo real.</p></div><div class="dash-hero-meta"><span id="dashDate"></span><button class="dash-cta" data-goto="search" data-module="search">Buscar producto</button></div></div>
@@ -30,6 +30,7 @@
 <div class="dash-grid">
 <section class="dash-card"><h3>Ocupación</h3><div class="occ-wrap"><div class="occ-ring" id="occRing"><div><strong id="occPct">0%</strong><small>ocupado</small></div></div><ul class="occ-legend"><li><i class="dot used"></i>Ocupadas <b id="occUsed">0</b></li><li><i class="dot free"></i>Libres <b id="occFree">0</b></li></ul></div></section>
 <section class="dash-card"><h3>Ocupación por rack</h3><div id="rackBars" class="rack-bars"></div></section>
+<section class="dash-card"><h3>Stock bajo / por reponer</h3><div id="lowStock" class="low-stock"></div></section>
 <section class="dash-card"><h3>Productos con más existencias</h3><div id="topProducts" class="top-products"></div></section>
 </div>
 <div class="section-head"><h3>Accesos rápidos</h3></div><div class="quick-grid">
@@ -68,7 +69,10 @@
 <div class="panel"><h3>Usuarios y roles</h3><p class="muted small">Las cuentas se crean en Supabase Authentication. Aquí puedes asignar roles y controlar el acceso a cada módulo. El permiso Pallets permite crear, editar y mover pallets; Movimientos es de consulta.</p><div id="userRoleList" class="list"></div></div>
 </section>
 <section id="settings" class="view">
-<div class="section-head"><div><p class="eyebrow">CONFIGURACIÓN</p><h2>Datos y sincronización</h2></div></div>
+<div class="section-head"><div><p class="eyebrow">CONFIGURACIÓN</p><h2>Configuración</h2></div></div>
+<div class="panel"><h3>Alertas de stock por correo</h3><p class="muted small">Define el mínimo y el máximo de cada producto. Cuando el stock total llegue cerca del mínimo (o por debajo) se envía un correo para solicitar mercancía, máximo una vez cada 24 h por producto.</p><label class="check-row"><input type="checkbox" id="alertEnabled" checked> Enviar alertas por correo</label><label>Correos que reciben la alerta (separados por coma)<input id="alertEmails" type="text" inputmode="email" placeholder="compras@empresa.com, jefe@empresa.com"></label><label>Avisar cuando el stock esté a menos de este % sobre el mínimo<input id="alertWarnPct" type="number" min="0" max="100" value="20"></label><div class="button-row"><button class="primary" id="saveAlertConfig" data-write>Guardar alertas</button><button class="secondary" id="testStockAlert">Revisar y enviar ahora</button></div></div>
+<div class="panel"><h3>Mínimos y máximos por producto</h3><p class="muted small">Deja ambos campos vacíos para no controlar ese producto. El máximo es opcional y se usa para sugerir cuánto pedir.</p><div class="filters"><input id="stockLimitsSearch" type="search" placeholder="Filtrar por código o descripción"></div><div class="table-scroll" id="stockLimitsGrid"></div><div class="button-row"><button class="primary" id="saveStockLimits" data-write>Guardar mínimos y máximos</button></div></div>
+<div class="section-head"><h3>Datos y sincronización</h3></div>
 <div class="panel"><h3>Sincronización en tiempo real</h3><p>Los cambios se comparten al instante entre usuarios conectados. Si se pierde la conexión, el sistema queda en modo de solo consulta hasta recuperar la conexión.</p><div class="button-row"><button class="primary" id="refreshSync" data-write>Sincronizar ahora</button></div><p id="syncMessage" class="muted small">Conectado a Supabase Realtime.</p><p class="small muted">La URL y clave pública de Supabase se configuran en el entorno de Netlify. Nunca uses una clave service_role en la app.</p></div>
 <div class="panel"><h3>Importar y exportar</h3><p>Exporta copias JSON sin credenciales. Importar combina racks, posiciones y pallets con los datos en la nube; no borra registros existentes ni reemplaza el historial de auditoría.</p><div class="button-row"><button class="secondary" id="exportData">Exportar copia JSON</button><label class="file-button">Importar JSON<input type="file" id="importFile" accept=".json,application/json" hidden></label><button class="secondary" id="exportCsv">Exportar inventario CSV</button></div></div>
 <div class="panel"><h3>Instalar en iPhone</h3><ol><li>Publica esta carpeta en un hosting HTTPS, por ejemplo GitHub Pages.</li><li>Abre la URL en Safari.</li><li>Pulsa Compartir → Añadir a pantalla de inicio.</li><li>Permite el uso de la cámara al escanear. La cámara requiere HTTPS.</li></ol></div>
@@ -99,7 +103,7 @@
 <script src="js/features/labels.js"></script>
 <script src="js/features/pallets.js"></script>
 <script src="js/features/moves.js"></script>
-<script src="js/features/inventory-grid.js"></script>
+<script src="js/features/inventory-grid.js"></script><script src="js/features/stock-limits.js"></script>
 <script src="js/features/scan.js"></script>
 <script src="js/features/admin.js"></script>
 <script src="js/features/data-tools.js"></script>

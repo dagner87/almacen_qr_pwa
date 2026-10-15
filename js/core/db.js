@@ -44,6 +44,7 @@ async function loadState() {
   for (const s of ['racks', 'locations', 'pallets', 'moves', 'settings']) state[s] = await all(s);
   state.settings = Object.fromEntries(state.settings.map((x) => [x.key, x.value]));
   renderAll();
+  if (typeof refreshStockLimits === 'function') refreshStockLimits();
 }
 
 async function logMove(action, palletId, from, to, details = '', products = []) {

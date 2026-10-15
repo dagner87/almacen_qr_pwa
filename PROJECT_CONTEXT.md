@@ -100,3 +100,8 @@ PWA en español para administrar inventario de almacén, ubicaciones de racks, p
 
 - Se corrigió el texto mal codificado en `app.js`; se hizo una búsqueda de patrones típicos de mojibake en el resto del proyecto y no quedaron coincidencias en los archivos de aplicación.
 - No se han ejecutado pruebas en los últimos cambios.
+
+### v52–v56 (resumen)
+- v52 Editar pallet escaneado usa el pallet guardado. v53 dashboard a ancho completo. v54 diseño tablet. v55 filtro Disponibles/Ocupadas en Ubicaciones.
+- v56 Configuración: mínimos/máximos por producto (stock_limits), alertas por correo (lert_config, stock_alert_state), panel "Stock bajo" en el dashboard. Código: js/features/stock-limits.js, stock.css, Edge Function supabase/functions/stock-alerts (Resend). Migración 20261014_004.
+- Despliegue de la alerta: ejecutar la migración 004; supabase functions deploy stock-alerts; secrets RESEND_API_KEY (y opcional ALERT_FROM).
