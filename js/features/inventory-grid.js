@@ -40,14 +40,14 @@ function renderInventory() {
     renderStockMoves();
     return;
   }
-  target.innerHTML = `<table class="inventory-grid"><thead><tr><th>Ubicaci\u00f3n</th><th>Pallet</th><th>C\u00f3digo</th><th>Descripci\u00f3n</th><th class="num">Stock</th><th class="num in">+ Entrada</th><th class="num out">\u2212 Salida</th><th class="num">Nuevo stock</th></tr></thead><tbody>${rows
+  target.innerHTML = `<table class="inventory-grid"><thead><tr><th class="c-loc">Ubicaci\u00f3n</th><th class="c-pallet">Pallet</th><th class="c-code">C\u00f3digo</th><th class="c-desc">Descripci\u00f3n</th><th class="num c-stock">Stock</th><th class="num in">+ Entrada</th><th class="num out">\u2212 Salida</th><th class="num">Nuevo stock</th></tr></thead><tbody>${rows
     .map(({ pallet, item, key, loc }) => {
       const current = Number(item.quantity || 0),
         pending = inventoryPending.get(key),
         entry = pending?.in || '',
         exit = pending?.out || '',
         next = current + Number(entry || 0) - Number(exit || 0);
-      return `<tr data-key="${escapeHtml(key)}" data-current="${current}" data-pallet="${escapeHtml(pallet.id)}" data-code="${escapeHtml(String(item.productCode || ''))}"><td>${escapeHtml(loc)}</td><td>${escapeHtml(pallet.code)}</td><td><strong>${escapeHtml(item.productCode)}</strong></td><td class="desc">${escapeHtml(item.description || '')}</td><td class="num">${current.toLocaleString()}</td><td class="cell"><input type="number" min="0" step="1" inputmode="numeric" data-f="in" value="${entry}" aria-label="Entrada"></td><td class="cell"><input type="number" min="0" step="1" inputmode="numeric" data-f="out" value="${exit}" aria-label="Salida"></td><td class="cell"><input type="number" min="0" step="1" inputmode="numeric" data-f="new" value="${next}" aria-label="Nuevo stock"></td></tr>`;
+      return `<tr data-key="${escapeHtml(key)}" data-current="${current}" data-pallet="${escapeHtml(pallet.id)}" data-code="${escapeHtml(String(item.productCode || ''))}"><td class="c-loc">${escapeHtml(loc)}</td><td class="c-pallet">${escapeHtml(pallet.code)}</td><td class="c-code"><strong>${escapeHtml(item.productCode)}</strong></td><td class="desc c-desc">${escapeHtml(item.description || '')}</td><td class="num c-stock">${current.toLocaleString()}</td><td class="cell"><input type="number" min="0" step="1" inputmode="numeric" data-f="in" value="${entry}" aria-label="Entrada"></td><td class="cell"><input type="number" min="0" step="1" inputmode="numeric" data-f="out" value="${exit}" aria-label="Salida"></td><td class="cell"><input type="number" min="0" step="1" inputmode="numeric" data-f="new" value="${next}" aria-label="Nuevo stock"></td></tr>`;
     })
     .join('')}</tbody></table>`;
   target.querySelectorAll('tr[data-key]').forEach(markInventoryRow);
@@ -209,7 +209,9 @@ async function saveInventoryChanges() {
     if (!AUTH_DISABLED) {
       const { data, error } = await supabaseClient.from('pallets').upsert(rows).select();
       if (error) throw error;
-      rows = data || rows;
+      if ((data?.length || 0) !== rows.length)
+        throw new Error('la base de datos no aceptó los cambios. Verifica que tu usuario sea administrador y vuelve a intentarlo.');
+      rows = data;
     }
     await putMany('pallets', rows);
     if (AUTH_DISABLED)
@@ -221,6 +223,7 @@ async function saveInventoryChanges() {
       }
     inventoryPending.clear();
     await loadState();
+    if (!AUTH_DISABLED) syncFromCloud().catch(() => {});
     notifyStockChange();
     toast(AUTH_DISABLED ? 'Inventario guardado en este dispositivo.' : 'Inventario actualizado.');
   } catch (error) {
@@ -241,8 +244,48 @@ function exportInventoryCsv() {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+const INVENTORY_COLUMNS = [
+  ['loc', 'Ubicación'],
+  ['pallet', 'Pallet'],
+  ['code', 'Código'],
+  ['desc', 'Descripción'],
+  ['stock', 'Stock'],
+];
+
+function hiddenInventoryColumns() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('inventoryHiddenCols'));
+    if (Array.isArray(saved)) return saved;
+  } catch (error) {
+    /* sin preferencia guardada */
+  }
+  return ['desc'];
+}
+
+function applyInventoryColumns() {
+  const hidden = hiddenInventoryColumns(),
+    wrap = $('inventoryGrid');
+  for (const [key] of INVENTORY_COLUMNS) wrap.classList.toggle(`hide-${key}`, hidden.includes(key));
+  const menu = $('inventoryColumnsMenu');
+  if (menu)
+    menu.innerHTML = INVENTORY_COLUMNS.map(
+      ([key, label]) =>
+        `<label class="check-row"><input type="checkbox" data-col="${key}" ${hidden.includes(key) ? '' : 'checked'}> ${label}</label>`,
+    ).join('');
+}
+
 function bindInventoryGrid() {
   const grid = $('inventoryGrid');
+  applyInventoryColumns();
+  $('inventoryColumnsMenu').addEventListener('change', (event) => {
+    const key = event.target.dataset.col;
+    if (!key) return;
+    const hidden = new Set(hiddenInventoryColumns());
+    if (event.target.checked) hidden.delete(key);
+    else hidden.add(key);
+    localStorage.setItem('inventoryHiddenCols', JSON.stringify([...hidden]));
+    applyInventoryColumns();
+  });
   grid.addEventListener('input', onInventoryInput);
   grid.addEventListener('keydown', onInventoryKeydown);
   grid.addEventListener('focusin', (event) => event.target.select?.());
