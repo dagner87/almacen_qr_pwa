@@ -94,6 +94,7 @@ PWA en español para administrar inventario de almacén, ubicaciones de racks, p
 2. Si se cambia un archivo que sirve el service worker, incrementar la versión de caché en `sw.js`.
 3. No dar por hecho que el QR impreso/escaneado funciona visualmente solo por tener el payload en código; confirmar el recorrido esperado por el usuario si el siguiente problema reportado es de interfaz o dispositivo.
 4. Tras modificar código: verificar (`scripts/verify-assets.js`), subir `CACHE`, hacer commit y push, y confirmar el despliegue en Netlify.
+5. **Todo cambio de base de datos va como migración** en `supabase/migrations/` (idempotente, solo ese cambio) y se refleja en `supabase.sql`. Nunca pedir al usuario que reejecute `supabase.sql` entero. Si el login falla con «No se encontró tu perfil», usar `20261014_001_repair_profile_access.sql`.
 
 ## Incidencias conocidas de inspección
 
