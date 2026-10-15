@@ -1,3 +1,6 @@
+#stockLimitsGrid{max-height:min(480px,60vh);overflow:auto;border:1px solid var(--line);border-radius:10px;background:#fff}
+#stockLimitsGrid .stock-limits-table{margin:0}
+#stockLimitsGrid thead th{position:sticky;top:0;z-index:2;background:#eef3ef;box-shadow:0 1px 0 var(--line)}
 .check-row{display:flex;align-items:center;gap:10px;font-weight:700}
 .check-row input{width:22px;height:22px;min-height:0;margin:0}
 .stock-limits-table td input{width:96px;padding:8px;text-align:right}
