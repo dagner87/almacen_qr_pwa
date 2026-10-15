@@ -19,3 +19,4 @@
 @media(min-width:621px) and (max-width:1366px){.stock-limits-table td input{min-height:44px;width:110px;font-size:16px}}
 .dash-card.accordion{margin-bottom:14px}.dash-card.accordion>summary{font-size:15px}.dash-grid>.dash-card.accordion{margin-bottom:0;align-self:start}
 .dash-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}@media(max-width:900px){.dash-grid{grid-template-columns:1fr!important}}.dash-grid>.dash-card>.occ-wrap,.dash-grid>.dash-card>.rack-bars,.dash-grid>.dash-card>.top-products{height:300px;overflow-y:auto;overscroll-behavior:contain;padding-right:6px}.dash-grid>.dash-card>.occ-wrap{justify-content:center}
+#locationList{max-height:calc(100vh - 380px);min-height:220px;overflow-y:auto;overscroll-behavior:contain;padding-right:6px}
