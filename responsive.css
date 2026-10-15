@@ -93,3 +93,59 @@ img,canvas,svg,video{max-width:100%}
   .dash-grid{gap:18px}
   .kpi strong{font-size:32px}
 }
+
+/* Tablet (vertical y horizontal) y pantallas táctiles grandes, administrador y operador */
+@media(min-width:621px) and (max-width:1366px){
+  html{font-size:16px}
+  body{font-size:16px;padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
+  .topbar{position:sticky;top:0;z-index:20;padding-top:calc(14px + env(safe-area-inset-top))}
+  main{grid-template-columns:200px minmax(0,1fr);column-gap:18px;padding:16px 18px}
+  .tabs{top:84px;padding:8px;max-height:calc(100dvh - 104px);overflow-y:auto}
+  .tab{min-height:50px;font-size:15px;padding:12px 14px}
+
+  /* Campos y botones con objetivo táctil de 48 px y 16 px para evitar el zoom de iOS */
+  input,select,textarea{font-size:16px;min-height:48px}
+  textarea{min-height:96px}
+  .primary,.secondary,.file-button{min-height:48px;padding:12px 18px}
+  .mini{min-height:42px;padding:9px 14px;font-size:14px}
+  .icon-btn{width:46px;height:46px}
+
+  /* Listas en dos columnas para aprovechar el ancho */
+  .list{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px}
+  .list.empty,.list>.empty{display:block;grid-column:1 / -1}
+  .item{align-items:flex-start;flex-direction:column}
+  .item-actions{width:100%;justify-content:flex-start}
+
+  /* Dashboard: tarjetas en 2 columnas en vertical */
+  .dash-grid{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+  .quick-grid{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+  .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+
+  /* Diálogos centrados y cómodos */
+  dialog{width:min(760px,calc(100% - 32px));max-height:92dvh;border-radius:18px;padding:24px}
+  .product-row{grid-template-columns:minmax(120px,1fr) minmax(160px,2fr) 120px auto}
+
+  /* Tablas y cuadrícula de inventario */
+  .inventory-table th,.inventory-table td{padding:13px 10px;font-size:15px}
+  .inventory-grid th,.inventory-grid td{height:48px;font-size:15px}
+  .inventory-grid td.cell{width:120px}
+  .inventory-grid td.cell input{height:46px;min-height:46px;font-size:17px}
+  .inventory-grid-wrap{max-height:calc(100dvh - 330px)}
+  .inventory-toolbar input[type="search"]{max-width:none}
+
+  /* Escáner y búsqueda */
+  #reader{max-width:560px}
+  .lookup-total{font-size:17px}
+  .location-highlight{font-size:17px;font-weight:800}
+  .toast{bottom:28px}
+}
+@media(min-width:900px) and (max-width:1366px){
+  main{grid-template-columns:220px minmax(0,1fr)}
+  .kpi-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .dash-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(min-width:621px) and (max-width:899px){
+  .kpi{padding:14px}
+  .kpi strong{font-size:24px}
+  .dash-hero{padding:22px}
+}
