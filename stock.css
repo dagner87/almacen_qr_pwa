@@ -17,3 +17,4 @@
 .low-row small{display:block;color:var(--muted);font-size:12px}
 .low-row span{font-weight:800;white-space:nowrap;font-size:13px}
 @media(min-width:621px) and (max-width:1366px){.stock-limits-table td input{min-height:44px;width:110px;font-size:16px}}
+.dash-card.accordion{margin-bottom:14px}.dash-card.accordion>summary{font-size:15px}.dash-grid>.dash-card.accordion{margin-bottom:0;align-self:start}
