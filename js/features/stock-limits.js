@@ -188,9 +188,32 @@ function notifyStockChange(immediate) {
 }
 
 function bindStockLimits() {
+  if ($('deleteAllPallets')) $('deleteAllPallets').onclick = deleteAllPallets;
   if (!$('saveStockLimits')) return;
   $('saveStockLimits').onclick = saveStockLimits;
   $('saveAlertConfig').onclick = saveAlertConfig;
   $('testStockAlert').onclick = () => runStockAlerts(true);
   $('stockLimitsSearch').oninput = renderStockSettings;
+}
+
+async function deleteAllPallets() {
+  if (!canWrite(true)) return;
+  const total = state.pallets.length;
+  const typed = prompt(`Se eliminarán ${total} pallet(s) de la base de datos. Esta acción no se puede deshacer.\n\nEscribe BORRAR para confirmar:`);
+  if (typed === null) return;
+  if (typed.trim().toUpperCase() !== 'BORRAR') return toast('Cancelado: no escribiste BORRAR.');
+  try {
+    if (!AUTH_DISABLED) {
+      const { error } = await supabaseClient.from('pallets').delete().neq('id', '');
+      if (error) throw error;
+      const { count, error: checkError } = await supabaseClient.from('pallets').select('id', { count: 'exact', head: true });
+      if (checkError) throw checkError;
+      if (count) throw new Error(`Quedaron ${count} pallet(s). Verifica que tu usuario sea administrador.`);
+    }
+    for (const pallet of state.pallets) await del('pallets', pallet.id);
+    await loadState();
+    toast('Todos los pallets fueron eliminados. Ya puedes importar el JSON.');
+  } catch (error) {
+    toast('No se pudo borrar: ' + error.message);
+  }
 }
