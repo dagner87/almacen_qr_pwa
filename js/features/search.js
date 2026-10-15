@@ -1,4 +1,4 @@
-﻿/* Pantalla Buscar producto. */
+/* Pantalla Buscar producto. */
 let lookupTimer = null,
   lookupSeq = 0;
 
@@ -54,7 +54,7 @@ function paintProductLookup(pallets, locations) {
     if (pallet.status !== 'active') continue;
     for (const item of palletProducts(pallet)) {
       const productCode = String(item.productCode || '').toLocaleLowerCase(),
-        description = String(item.description || '').toLocaleLowerCase();
+        description = String(productDescription(item)).toLocaleLowerCase();
       if (productCode.includes(query) || description.includes(query)) matches.push({ pallet, item });
     }
   }

@@ -45,6 +45,7 @@ async function loadState() {
   state.settings = Object.fromEntries(state.settings.map((x) => [x.key, x.value]));
   renderAll();
   if (typeof refreshStockLimits === 'function') refreshStockLimits();
+  if (typeof refreshCatalog === 'function') refreshCatalog();
 }
 
 async function logMove(action, palletId, from, to, details = '', products = []) {

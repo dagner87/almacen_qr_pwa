@@ -64,7 +64,7 @@ async function handleCode(code) {
           ? products
               .map(
                 (item) =>
-                  `<tr><td>${escapeHtml(item.productCode)}</td><td>${escapeHtml(item.description || '')}</td><td>${Number(item.quantity).toLocaleString()}</td></tr>`,
+                  `<tr><td>${escapeHtml(item.productCode)}</td><td>${escapeHtml(productDescription(item))}</td><td>${Number(item.quantity).toLocaleString()}</td></tr>`,
               )
               .join('')
           : `<tr><td colspan="3">${escapeHtml(pallet.brand || 'Sin detalle de productos')} · ${Number(pallet.boxes || 0).toLocaleString()} cajas</td></tr>`,

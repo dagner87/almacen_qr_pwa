@@ -133,6 +133,7 @@ async function init() {
   $('palletStatusFilter').onchange = renderPallets;
   bindInventoryGrid();
   bindStockLimits();
+bindCatalog();
   $('productLookupInput').oninput = () => renderProductLookup();
   $('productLookupForm').onsubmit = (event) => {
     event.preventDefault();

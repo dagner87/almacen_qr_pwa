@@ -105,7 +105,7 @@ function openPalletQr(p) {
     rows = products
       .map(
         (item) =>
-          `<tr><td>${escapeHtml(item.productCode)}</td><td>${escapeHtml(item.description || '')}</td><td>${Number(item.quantity || 0)}</td></tr>`,
+          `<tr><td>${escapeHtml(item.productCode)}</td><td>${escapeHtml(productDescription(item))}</td><td>${Number(item.quantity || 0)}</td></tr>`,
       )
       .join(''),
     detail = `<p class="small"><b>Ubicación:</b> ${escapeHtml(locLabel(p.locationId))} · <b>Total:</b> ${palletQuantity(p)} ${palletQuantityLabel(p)}</p>${

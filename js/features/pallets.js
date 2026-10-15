@@ -3,7 +3,7 @@ function productRowsMarkup(products = []) {
   return products
     .map(
       (item) =>
-        `<div class="product-row"><label>Código<input class="product-code" type="text" inputmode="numeric" maxlength="100" value="${escapeHtml(item.productCode || '')}" placeholder="Ej. 19575" autocomplete="off"></label><label>Descripción<input class="product-description" type="text" maxlength="200" value="${escapeHtml(item.description || '')}" placeholder="Descripción del producto"></label><label>Cantidad<input class="product-quantity" type="number" min="1" step="1" value="${escapeHtml(item.quantity ?? '')}" placeholder="0"></label><button type="button" class="mini remove-product" aria-label="Quitar producto">Quitar</button></div>`,
+        `<div class="product-row"><label>Código<input class="product-code" list="catalogCodes" type="text" inputmode="numeric" maxlength="100" value="${escapeHtml(item.productCode || '')}" placeholder="Ej. 19575" autocomplete="off"></label><label>Descripción<input class="product-description" type="text" maxlength="200" value="${escapeHtml(item.description || '')}" placeholder="Descripción del producto"></label><label>Cantidad<input class="product-quantity" type="number" min="1" step="1" value="${escapeHtml(item.quantity ?? '')}" placeholder="0"></label><button type="button" class="mini remove-product" aria-label="Quitar producto">Quitar</button></div>`,
     )
     .join('');
 }

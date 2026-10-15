@@ -22,7 +22,7 @@ function visibleInventoryRows() {
   return inventoryRows().filter(
     (row) =>
       !query ||
-      [row.item.productCode, row.item.description, row.pallet.code, row.loc].some((value) =>
+      [row.item.productCode, productDescription(row.item), row.pallet.code, row.loc].some((value) =>
         String(value || '')
           .toLocaleLowerCase()
           .includes(query),
@@ -47,7 +47,7 @@ function renderInventory() {
         entry = pending?.in || '',
         exit = pending?.out || '',
         next = current + Number(entry || 0) - Number(exit || 0);
-      return `<tr data-key="${escapeHtml(key)}" data-current="${current}" data-pallet="${escapeHtml(pallet.id)}" data-code="${escapeHtml(String(item.productCode || ''))}"><td class="c-loc">${escapeHtml(loc)}</td><td class="c-pallet">${escapeHtml(pallet.code)}</td><td class="c-code"><strong>${escapeHtml(item.productCode)}</strong></td><td class="desc c-desc">${escapeHtml(item.description || '')}</td><td class="num c-stock">${current.toLocaleString()}</td><td class="cell"><input type="number" min="0" step="1" inputmode="numeric" data-f="in" value="${entry}" aria-label="Entrada"></td><td class="cell"><input type="number" min="0" step="1" inputmode="numeric" data-f="out" value="${exit}" aria-label="Salida"></td><td class="cell"><input type="number" min="0" step="1" inputmode="numeric" data-f="new" value="${next}" aria-label="Nuevo stock"></td></tr>`;
+      return `<tr data-key="${escapeHtml(key)}" data-current="${current}" data-pallet="${escapeHtml(pallet.id)}" data-code="${escapeHtml(String(item.productCode || ''))}"><td class="c-loc">${escapeHtml(loc)}</td><td class="c-pallet">${escapeHtml(pallet.code)}</td><td class="c-code"><strong>${escapeHtml(item.productCode)}</strong></td><td class="desc c-desc">${escapeHtml(productDescription(item))}</td><td class="num c-stock">${current.toLocaleString()}</td><td class="cell"><input type="number" min="0" step="1" inputmode="numeric" data-f="in" value="${entry}" aria-label="Entrada"></td><td class="cell"><input type="number" min="0" step="1" inputmode="numeric" data-f="out" value="${exit}" aria-label="Salida"></td><td class="cell"><input type="number" min="0" step="1" inputmode="numeric" data-f="new" value="${next}" aria-label="Nuevo stock"></td></tr>`;
     })
     .join('')}</tbody></table>`;
   target.querySelectorAll('tr[data-key]').forEach(markInventoryRow);
@@ -269,7 +269,7 @@ function exportInventoryCsv() {
   const quote = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
   const lines = [['Ubicacion', 'Pallet', 'Codigo', 'Descripcion', 'Stock'].map(quote).join(',')];
   for (const { pallet, item, loc } of visibleInventoryRows())
-    lines.push([loc, pallet.code, item.productCode, item.description || '', Number(item.quantity || 0)].map(quote).join(','));
+    lines.push([loc, pallet.code, item.productCode, productDescription(item), Number(item.quantity || 0)].map(quote).join(','));
   const url = URL.createObjectURL(new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' }));
   const link = document.createElement('a');
   link.href = url;
@@ -332,5 +332,5 @@ function bindInventoryGrid() {
     inventoryPending.clear();
     renderInventory();
   };
-  $('inventoryExport').onclick = exportInventoryCsv;
+  $('inventoryExport').onclick = exportInventoryExcel;
 }
