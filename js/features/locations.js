@@ -1,9 +1,13 @@
 /* Pantalla Ubicaciones. */
 function renderLocations() {
   const q = $('locationSearch').value.toLowerCase(),
-    level = $('levelFilter').value;
+    level = $('levelFilter').value,
+    status = $('statusFilter').value;
+  const freeCount = state.locations.filter((l) => !activePalletsAt(l.id).length).length;
+  $('locationSummary').textContent = `${freeCount} disponibles · ${state.locations.length - freeCount} ocupadas · ${state.locations.length} en total`;
   const list = state.locations
     .filter((l) => (!q || l.code.toLowerCase().includes(q)) && (!level || String(l.level) === level))
+    .filter((l) => !status || (status === 'free') === !activePalletsAt(l.id).length)
     .sort((a, b) => a.code.localeCompare(b.code, undefined, { numeric: true }));
   $('locationList').innerHTML = list.length
     ? list

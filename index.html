@@ -41,7 +41,7 @@
 </section><section id="locations" class="view">
 <div class="section-head"><div><p class="eyebrow">ESTRUCTURA FÍSICA</p><h2>Ubicaciones</h2></div><div class="button-row"><button class="secondary" id="printBarcodesBtn">Imprimir códigos</button><button class="primary" id="addRackBtn" data-role="admin" data-write hidden>＋ Crear racks</button></div></div>
 <p class="muted">Formato de ubicación: <b>R01-N02-P03</b> (rack, nivel desde abajo, posición de izquierda a derecha).</p>
-<div class="filters"><input id="locationSearch" placeholder="Buscar R01-N02-P03…" aria-label="Buscar ubicación"><select id="levelFilter"><option value="">Todos los niveles</option><option value="1">Nivel 1</option><option value="2">Nivel 2</option><option value="3">Nivel 3</option><option value="4">Nivel 4</option><option value="5">Nivel 5</option></select></div>
+<div class="filters"><input id="locationSearch" placeholder="Buscar R01-N02-P03…" aria-label="Buscar ubicación"><select id="levelFilter"><option value="">Todos los niveles</option><option value="1">Nivel 1</option><option value="2">Nivel 2</option><option value="3">Nivel 3</option><option value="4">Nivel 4</option><option value="5">Nivel 5</option></select><select id="statusFilter" aria-label="Estado"><option value="">Todas</option><option value="free" selected>Solo disponibles</option><option value="used">Solo ocupadas</option></select></div><p id="locationSummary" class="muted small"></p>
 <div id="locationList" class="list"></div>
 </section>
 <section id="search" class="view">

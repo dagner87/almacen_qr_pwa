@@ -127,6 +127,7 @@ async function init() {
   };
   $('locationSearch').oninput = renderLocations;
   $('levelFilter').onchange = renderLocations;
+  $('statusFilter').onchange = renderLocations;
   $('palletSearch').oninput = renderPallets;
   $('palletStatusFilter').onchange = renderPallets;
   bindInventoryGrid();
