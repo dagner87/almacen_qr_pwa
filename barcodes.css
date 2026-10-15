@@ -38,53 +38,37 @@
   letter-spacing: .5px;
 }
 
+.barcode-filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.barcode-filters input{flex:1 1 220px}#barcodePrintArea{max-height:48vh;overflow-y:auto;overscroll-behavior:contain;padding-right:6px}#barcodeSheet{display:none}
+
 @media print {
   @page {
     size: A4 portrait;
     margin: 8mm;
   }
 
-  body * {
-    visibility: hidden !important;
-  }
-
-  #barcodeDialog,
-  #barcodeDialog * {
-    visibility: visible !important;
-  }
-
-  #barcodeDialog {
-    position: absolute !important;
-    inset: 0 auto auto 0;
-    display: block !important;
-    width: 100% !important;
-    max-width: none !important;
-    max-height: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: visible !important;
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
-  }
-
-  #barcodeDialog::backdrop {
-    background: transparent !important;
-  }
-
-  #barcodeDialog .dialog-head,
-  #barcodeDialog p,
-  #barcodeDialog .barcode-controls {
+  body.printing-barcodes > *:not(#barcodeSheet) {
     display: none !important;
   }
 
-  #barcodePrintArea {
-    position: static;
+  body.printing-barcodes dialog {
+    display: none !important;
+  }
+
+  body.printing-barcodes {
+    background: #fff;
+  }
+
+  body.printing-barcodes #barcodeSheet {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 4mm;
     width: 100%;
     margin: 0;
+    visibility: visible !important;
+  }
+
+  body.printing-barcodes #barcodeSheet * {
+    visibility: visible !important;
   }
 
   .barcode-label {

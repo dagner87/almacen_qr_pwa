@@ -10,44 +10,56 @@ function openBarcodeDialog() {
   $('barcodeRackFilter').innerHTML =
     '<option value="">Todos los racks</option>' +
     racks.map((r) => `<option value="${escapeHtml(r)}">${escapeHtml(r)}</option>`).join('');
+  $('barcodeSearch').value = '';
   renderBarcodes();
   $('barcodeDialog').showModal();
 }
 
-function renderBarcodes() {
+function barcodeList() {
   const rack = $('barcodeRackFilter').value,
-    list = state.locations
-      .filter((l) => !rack || locationRackCode(l) === rack)
-      .sort((a, b) => a.code.localeCompare(b.code, undefined, { numeric: true })),
+    matcher = locationMatcher($('barcodeSearch').value.trim());
+  return state.locations
+    .filter((l) => (!rack || locationRackCode(l) === rack) && matcher(l, locationParts(l)))
+    .sort((a, b) => a.code.localeCompare(b.code, undefined, { numeric: true }));
+}
+
+function paintBarcodes(area, list) {
+  area.innerHTML = list
+    .map(
+      (l) =>
+        `<article class="barcode-label"><svg data-barcode="${escapeHtml(l.code)}"></svg><strong>${escapeHtml(l.code)}</strong></article>`,
+    )
+    .join('');
+  area.querySelectorAll('[data-barcode]').forEach((svg) =>
+    JsBarcode(svg, svg.dataset.barcode, {
+      format: 'CODE128',
+      displayValue: false,
+      width: 1.4,
+      height: 52,
+      margin: 0,
+      lineColor: '#111',
+      background: '#fff',
+    }),
+  );
+}
+
+const BARCODE_PREVIEW_LIMIT = 120;
+
+function renderBarcodes() {
+  const list = barcodeList(),
     area = $('barcodePrintArea'),
     printButton = $('printBarcodes');
   if (typeof JsBarcode === 'undefined') {
     area.innerHTML =
-      '<div class="empty">No se cargó el generador de códigos de barras. Conéctate a Internet y vuelve a intentarlo.</div>';
+      '<div class="empty">No se carg� el generador de c�digos de barras. Con�ctate a Internet y vuelve a intentarlo.</div>';
     printButton.disabled = true;
     return;
   }
-  area.innerHTML = list.length
-    ? list
-        .map(
-          (l) =>
-            `<article class="barcode-label"><svg data-barcode="${escapeHtml(l.code)}"></svg><strong>${escapeHtml(l.code)}</strong></article>`,
-        )
-        .join('')
-    : '<div class="empty">No hay ubicaciones en este rack.</div>';
-  area
-    .querySelectorAll('[data-barcode]')
-    .forEach((svg) =>
-      JsBarcode(svg, svg.dataset.barcode, {
-        format: 'CODE128',
-        displayValue: false,
-        width: 1.4,
-        height: 52,
-        margin: 0,
-        lineColor: '#111',
-        background: '#fff',
-      }),
-    );
+  if (list.length) paintBarcodes(area, list.slice(0, BARCODE_PREVIEW_LIMIT));
+  else area.innerHTML = '<div class="empty">Ninguna ubicaci�n coincide con la b�squeda.</div>';
+  $('barcodeCount').textContent = list.length
+    ? `${list.length} etiqueta(s)${list.length > BARCODE_PREVIEW_LIMIT ? ` � vista previa de las primeras ${BARCODE_PREVIEW_LIMIT}; se imprimen todas` : ''}`
+    : '';
   printButton.disabled = !list.length;
 }
 
@@ -57,10 +69,31 @@ function printBarcodes() {
     return;
   }
   if (typeof JsBarcode === 'undefined') {
-    toast('No se cargó el generador de códigos de barras.');
+    toast('No se carg� el generador de c�digos de barras.');
     return;
   }
-  window.print();
+  const list = barcodeList();
+  if (!list.length) {
+    toast('No hay etiquetas para imprimir.');
+    return;
+  }
+  // Se imprime una hoja propia fuera del di�logo: los di�logos modales se recortan al imprimir.
+  let sheet = $('barcodeSheet');
+  if (!sheet) {
+    sheet = document.createElement('div');
+    sheet.id = 'barcodeSheet';
+    sheet.className = 'barcode-grid';
+    document.body.appendChild(sheet);
+  }
+  paintBarcodes(sheet, list);
+  document.body.classList.add('printing-barcodes');
+  const done = () => {
+    document.body.classList.remove('printing-barcodes');
+    sheet.innerHTML = '';
+    window.removeEventListener('afterprint', done);
+  };
+  window.addEventListener('afterprint', done);
+  setTimeout(() => window.print(), 50);
 }
 
 function qrRender(container, code, size = 190) {

@@ -1,6 +1,7 @@
 /* Arranque de la aplicación. Se carga al final. */
 $('printBarcodesBtn').onclick = openBarcodeDialog;
 $('barcodeRackFilter').onchange = renderBarcodes;
+$('barcodeSearch').oninput = renderBarcodes;
 $('printBarcodes').onclick = printBarcodes;
 $('addPalletProduct').onclick = () => addProductRow();
 $('palletLocationInput').oninput = () => resolveLocationInput();
