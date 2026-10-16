@@ -9,13 +9,15 @@ $('palletLocationInput').onchange = () => resolveLocationInput(true);
 $('palletLocationInput').onblur = () => resolveLocationInput(true);
 $('rotationRange').onchange = renderRotation;
 document.querySelectorAll('[data-operator-action]').forEach((button) => {
-  button.addEventListener('click', () => {
+  button.addEventListener('click', async () => {
     const action = button.dataset.operatorAction;
     if (action === 'new-pallet') {
       showView('pallets');
       $('addPalletBtn').click();
-    } else if (action === 'place-pallet') showView('scan');
-    else if (action === 'search') {
+    } else if (action === 'place-pallet') {
+      showView('scan');
+      await startScan();
+    } else if (action === 'search') {
       showView('search');
       $('productLookupInput').focus();
     } else if (action === 'locations') {
