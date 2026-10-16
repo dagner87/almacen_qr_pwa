@@ -51,14 +51,14 @@ function renderBarcodes() {
     printButton = $('printBarcodes');
   if (typeof JsBarcode === 'undefined') {
     area.innerHTML =
-      '<div class="empty">No se carg� el generador de c�digos de barras. Con�ctate a Internet y vuelve a intentarlo.</div>';
+      '<div class="empty">No se cargó el generador de códigos de barras. Conéctate a Internet y vuelve a intentarlo.</div>';
     printButton.disabled = true;
     return;
   }
   if (list.length) paintBarcodes(area, list.slice(0, BARCODE_PREVIEW_LIMIT));
-  else area.innerHTML = '<div class="empty">Ninguna ubicaci�n coincide con la b�squeda.</div>';
+  else area.innerHTML = '<div class="empty">Ninguna ubicación coincide con la búsqueda.</div>';
   $('barcodeCount').textContent = list.length
-    ? `${list.length} etiqueta(s)${list.length > BARCODE_PREVIEW_LIMIT ? ` � vista previa de las primeras ${BARCODE_PREVIEW_LIMIT}; se imprimen todas` : ''}`
+    ? `${list.length} etiqueta(s)${list.length > BARCODE_PREVIEW_LIMIT ? ` · vista previa de las primeras ${BARCODE_PREVIEW_LIMIT}; se imprimen todas` : ''}`
     : '';
   printButton.disabled = !list.length;
 }
@@ -69,7 +69,7 @@ function printBarcodes() {
     return;
   }
   if (typeof JsBarcode === 'undefined') {
-    toast('No se carg� el generador de c�digos de barras.');
+    toast('No se cargó el generador de códigos de barras.');
     return;
   }
   const list = barcodeList();
@@ -77,7 +77,7 @@ function printBarcodes() {
     toast('No hay etiquetas para imprimir.');
     return;
   }
-  // Se imprime una hoja propia fuera del di�logo: los di�logos modales se recortan al imprimir.
+  // Se imprime una hoja propia fuera del diálogo: los diálogos modales se recortan al imprimir.
   let sheet = $('barcodeSheet');
   if (!sheet) {
     sheet = document.createElement('div');
