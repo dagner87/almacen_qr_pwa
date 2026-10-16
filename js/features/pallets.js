@@ -3,7 +3,7 @@ function productRowsMarkup(products = []) {
   return products
     .map(
       (item) =>
-        `<div class="product-row"><label>Código<input class="product-code" list="catalogCodes" type="text" inputmode="numeric" maxlength="100" value="${escapeHtml(item.productCode || '')}" placeholder="Ej. 19575" autocomplete="off"></label><label>Descripción<input class="product-description" type="text" maxlength="200" value="${escapeHtml(item.description || '')}" placeholder="Descripción del producto"></label><label>Cantidad<input class="product-quantity" type="number" min="1" step="1" value="${escapeHtml(item.quantity ?? '')}" placeholder="0"></label><button type="button" class="mini remove-product" aria-label="Quitar producto">Quitar</button></div>`,
+        `<div class="product-row"><label>Código<input class="product-code" list="catalogCodes" type="text" inputmode="numeric" maxlength="100" value="${escapeHtml(item.productCode || '')}" placeholder="Ej. 19575" autocomplete="off"></label><label>Descripción<input class="product-description" type="text" maxlength="200" value="${escapeHtml(productDescription(item))}" placeholder="Descripción del producto"></label><label>Cantidad<input class="product-quantity" type="number" min="1" step="1" value="${escapeHtml(item.quantity ?? '')}" placeholder="0"></label><button type="button" class="mini remove-product" aria-label="Quitar producto">Quitar</button></div>`,
     )
     .join('');
 }
@@ -64,7 +64,7 @@ function renderPallets() {
             p.description,
             p.brand,
             p.notes,
-            ...palletProducts(p).flatMap((item) => [item.productCode, item.description]),
+            ...palletProducts(p).flatMap((item) => [item.productCode, productDescription(item)]),
           ]
             .join(' ')
             .toLowerCase()
@@ -110,10 +110,25 @@ async function savePallet(event) {
   if (!canWrite()) return;
   const id = $('palletId').value,
     old = state.pallets.find((item) => item.id === id),
-    locationId = resolveLocationInput(true)?.id || '';
+    selectedLocation = resolveLocationInput(true);
+  let locationId = selectedLocation?.id || '';
   if (!locationId) {
-    toast('Selecciona una ubicación.');
-    return;
+    let temporaryLocation = state.locations.find((location) => String(location.code).trim().toLocaleLowerCase() === 'pasillo');
+    if (!temporaryLocation) {
+      temporaryLocation = { id: 'PASILLO', code: 'Pasillo', rackId: 'PASILLO', level: 0, position: 0, capacity: 0, createdAt: now() };
+      try {
+        if (!AUTH_DISABLED) {
+          const { error } = await supabaseClient.from('locations').upsert(temporaryLocation);
+          if (error) throw error;
+        }
+        await put('locations', temporaryLocation);
+        state.locations.push(temporaryLocation);
+      } catch (error) {
+        toast('No se pudo preparar la ubicación temporal Pasillo: ' + error.message);
+        return;
+      }
+    }
+    locationId = temporaryLocation.id;
   }
   if (!state.locations.some((location) => location.id === locationId)) {
     toast('La ubicación ya no existe. Actualiza el inventario e inténtalo nuevamente.');
@@ -224,6 +239,7 @@ async function savePallet(event) {
       savedRows = data || savedRows;
     }
     await putMany('pallets', savedRows);
+    await saveCatalogFromProducts(products);
     const savedPallet = savedRows.find((item) => item.id === pallet.id) || pallet;
     if (AUTH_DISABLED) {
       const action = !old ? 'Alta de pallet' : old.locationId !== locationId ? 'Movimiento' : 'Actualización de stock';

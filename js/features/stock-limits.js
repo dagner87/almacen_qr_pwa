@@ -10,9 +10,9 @@ function stockTotals() {
     for (const item of palletProducts(pallet)) {
       const code = String(item.productCode || '').trim().toLocaleUpperCase();
       if (!code) continue;
-      const row = totals.get(code) || { code, description: item.description || '', qty: 0 };
+      const row = totals.get(code) || { code, description: productDescription(item), qty: 0 };
       row.qty += Number(item.quantity || 0);
-      if (!row.description && item.description) row.description = item.description;
+      if (!row.description) row.description = productDescription(item);
       totals.set(code, row);
     }
   }
@@ -65,7 +65,7 @@ function renderLowStock() {
         .slice(0, 10)
         .map(
           ({ limit, stock, level }) =>
-            `<div class="low-row ${level}"><div><b>${escapeHtml(limit.product_code)}</b><small>${escapeHtml(limit.description || '')}</small></div><span>${stock.toLocaleString()} / mín ${Number(limit.min_qty).toLocaleString()}</span></div>`,
+            `<div class="low-row ${level}"><div><b>${escapeHtml(limit.product_code)}</b><small>${escapeHtml(catalogLookup(limit.product_code)?.description || limit.description || '')}</small></div><span>${stock.toLocaleString()} / mín ${Number(limit.min_qty).toLocaleString()}</span></div>`,
         )
         .join('')
     : `<p class="muted small">${stockLimits.length ? 'Todo el stock está sobre el mínimo.' : 'Aún no hay mínimos configurados (Configuración).'}</p>`;
@@ -79,7 +79,7 @@ function renderStockSettings() {
     query = ($('stockLimitsSearch')?.value || '').trim().toLocaleLowerCase();
   for (const l of stockLimits) {
     const code = String(l.product_code).toLocaleUpperCase();
-    if (!totals.has(code)) totals.set(code, { code, description: l.description || '', qty: 0 });
+    if (!totals.has(code)) totals.set(code, { code, description: catalogLookup(code)?.description || l.description || '', qty: 0 });
   }
   const rows = [...totals.values()]
     .filter((r) => !query || `${r.code} ${r.description}`.toLocaleLowerCase().includes(query))

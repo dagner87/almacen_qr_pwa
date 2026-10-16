@@ -27,7 +27,7 @@ function catalogLookup(code) {
 }
 
 function productDescription(item) {
-  return item.description || catalogLookup(item.productCode)?.description || '';
+  return catalogLookup(item.productCode)?.description || item.description || '';
 }
 
 async function refreshCatalog() {
@@ -41,6 +41,44 @@ async function refreshCatalog() {
   }
   catalogIndex = null;
   renderCatalogOptions();
+}
+
+/* El cat�logo manda: al guardar un pallet se actualizan las descripciones cambiadas y se agregan los c�digos nuevos. */
+async function saveCatalogFromProducts(products) {
+  if (!supabaseClient || AUTH_DISABLED || currentProfile?.role !== 'admin') return;
+  try {
+    if (!productCatalog.length) {
+      const seed = CATALOG_SEED.map(([code, description, unit], i) => ({ sort_order: i + 1, code, description, unit }));
+      const { error } = await supabaseClient.from('product_catalog').insert(seed);
+      if (error) throw error;
+      await refreshCatalog();
+    }
+    const adds = [],
+      queued = new Set();
+    for (const item of products) {
+      const code = String(item.productCode || '').trim(),
+        description = String(item.description || '').trim(),
+        found = catalogLookup(code);
+      if (!code || !description || queued.has(code.toLocaleUpperCase())) continue;
+      if (!found) {
+        queued.add(code.toLocaleUpperCase());
+        adds.push({ sort_order: productCatalog.length + adds.length + 1, code, description, unit: 'box' });
+      } else if (found.id && found.description !== description) {
+        const { error } = await supabaseClient
+          .from('product_catalog')
+          .update({ description, updated_at: new Date().toISOString() })
+          .eq('id', found.id);
+        if (error) throw error;
+      }
+    }
+    if (adds.length) {
+      const { error } = await supabaseClient.from('product_catalog').insert(adds);
+      if (error) throw error;
+    }
+    await refreshCatalog();
+  } catch (error) {
+    toast('Pallet guardado, pero no se pudo actualizar el cat�logo: ' + error.message);
+  }
 }
 
 function renderCatalogOptions() {

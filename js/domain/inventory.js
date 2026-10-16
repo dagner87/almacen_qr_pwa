@@ -46,7 +46,7 @@ function productRotation(sinceMs = 0) {
       const key = code.toLocaleUpperCase();
       const row = stats.get(key) || {
         code,
-        description: item.description || '',
+        description: productDescription(item),
         altas: 0,
         movimientos: 0,
         ajustes: 0,
@@ -58,7 +58,7 @@ function productRotation(sinceMs = 0) {
       else row.ajustes++;
       row.units += Number(item.quantity || 0);
       row.last = Math.max(row.last, at || 0);
-      if (!row.description && item.description) row.description = item.description;
+      if (!row.description) row.description = productDescription(item);
       stats.set(key, row);
     }
   }

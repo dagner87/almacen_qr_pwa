@@ -55,7 +55,7 @@ function renderDashboardPanels() {
   for (const pallet of active)
     for (const item of palletProducts(pallet)) {
       const key = item.productCode || item.description || '—',
-        row = totals.get(key) || { code: item.productCode || '', description: item.description || '', qty: 0 };
+        row = totals.get(key) || { code: item.productCode || '', description: productDescription(item), qty: 0 };
       row.qty += Number(item.quantity || 0);
       totals.set(key, row);
     }
