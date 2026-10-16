@@ -4,8 +4,8 @@ $('barcodeRackFilter').onchange = renderBarcodes;
 $('barcodeSearch').oninput = renderBarcodes;
 $('printBarcodes').onclick = printBarcodes;
 $('addPalletProduct').onclick = () => addProductRow();
-$('importPalletCodes').onclick = importBulkPalletCodes;
 $('externalProductCodes').onchange = setExternalProductMode;
+$('palletBulkCodes').oninput = updateReturnBoxCount;
 
 $('palletLocationInput').oninput = () => resolveLocationInput();
 $('palletLocationInput').onchange = () => resolveLocationInput(true);
@@ -65,10 +65,7 @@ $('palletProductRows').addEventListener('change', (event) => {
 });
 $('palletProductRows').addEventListener('click', (event) => {
   const button = event.target.closest('.remove-product');
-  if (button) {
-    button.closest('.product-row').remove();
-    updateReturnBoxCount();
-  }
+  if (button) button.closest('.product-row').remove();
 });
 
 async function init() {

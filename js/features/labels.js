@@ -126,6 +126,7 @@ function openQr(code, title, qrValue = code, extraHtml = '') {
 
 function openPalletQr(p) {
   const products = palletProducts(p),
+    isReturn = products.length > 0 && products.every((item) => item.externalCode),
     payload = {
       type: 'pallet',
       code: p.code,
@@ -133,17 +134,20 @@ function openPalletQr(p) {
       products: products.map((item) => ({
         productCode: String(item.productCode || ''),
         quantity: Number(item.quantity || 0),
+        ...(item.externalCode ? { returnStore: String(item.returnStore || '') } : {}),
       })),
     },
     rows = products
       .map(
         (item) =>
-          `<tr><td>${escapeHtml(item.productCode)}</td><td>${escapeHtml(productDescription(item))}</td><td>${Number(item.quantity || 0)}</td></tr>`,
+          isReturn
+            ? `<tr><td>${escapeHtml(item.productCode)}</td><td>${escapeHtml(item.returnStore || '')}</td></tr>`
+            : `<tr><td>${escapeHtml(item.productCode)}</td><td>${escapeHtml(productDescription(item))}</td><td>${Number(item.quantity || 0)}</td></tr>`,
       )
       .join(''),
-    detail = `<p class="small qr-screen-only"><b>Ubicación:</b> ${escapeHtml(locLabel(p.locationId))} · <b>Total:</b> ${palletQuantity(p)} ${palletQuantityLabel(p)}</p><p class="qr-print-total">${palletQuantity(p)} ${palletQuantityLabel(p)}</p>${
+    detail = `<p class="small qr-screen-only"><b>Ubicación:</b> ${escapeHtml(locLabel(p.locationId))} · <b>Total:</b> ${palletQuantity(p)} ${palletQuantityLabel(p)}</p><p class="qr-print-total">${isReturn ? `${products.length} cajas de retorno` : `${palletQuantity(p)} ${palletQuantityLabel(p)}`}</p>${
       rows
-        ? `<table class="rotation-table qr-products qr-screen-only"><thead><tr><th>Código</th><th>Detalle</th><th>Cant.</th></tr></thead><tbody>${rows}</tbody></table>`
+        ? `<table class="rotation-table qr-products ${isReturn ? 'qr-return-list' : 'qr-screen-only'}"><thead><tr>${isReturn ? '<th>Código de caja</th><th>Tienda</th>' : '<th>Código</th><th>Detalle</th><th>Cant.</th>'}</tr></thead><tbody>${rows}</tbody></table>`
         : ''
     }`;
   openQr(p.code, 'Etiqueta del pallet', `ALMACEN_PALLET:${JSON.stringify(payload)}`, detail);

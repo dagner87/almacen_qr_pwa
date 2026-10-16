@@ -9,65 +9,43 @@ function productRowsMarkup(products = []) {
 }
 
 function addProductRow(product = {}) {
-  if ($('externalProductCodes').checked) product = { ...product, externalCode: true, returnStore: product.returnStore || $('returnStoreName').value.trim() };
   $('palletProductRows').insertAdjacentHTML('beforeend', productRowsMarkup([product]));
-  updateReturnBoxCount();
   const row = $('palletProductRows').lastElementChild;
   row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   row.querySelector('.product-code')?.focus({ preventScroll: true });
 }
 
 function setExternalProductMode() {
-  $('returnEntry').hidden = !$('externalProductCodes').checked;
+  const isReturn = $('externalProductCodes').checked;
+  $('returnEntry').hidden = !isReturn;
+  $('standardProductEntry').hidden = isReturn;
   updateReturnBoxCount();
 }
 
 function updateReturnBoxCount() {
-  $('returnBoxCount').textContent = [...$('palletProductRows').querySelectorAll('.product-row .product-store')].length;
+  const codes = $('palletBulkCodes').value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  $('returnBoxCount').textContent = codes.length;
 }
 
-function importBulkPalletCodes() {
-  const textarea = $('palletBulkCodes'),
+function readReturnProducts(old) {
+  const lines = $('palletBulkCodes').value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean),
+    existing = new Map(palletProducts(old).filter((item) => item.externalCode).map((item) => [String(item.productCode || '').trim().toLocaleUpperCase(), item])),
     store = $('returnStoreName').value.trim(),
-    lines = textarea.value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean),
-    parsed = new Map(),
-    errors = [];
-  if (!lines.length) {
-    toast('Pega primero una lista de códigos.');
-    textarea.focus();
-    return;
-  }
-  if (!store) {
-    toast('Indica la tienda de origen antes de agregar los códigos.');
-    $('returnStoreName').focus();
-    return;
-  }
+    seen = new Set(),
+    products = [];
+  if (!lines.length) return { products, error: 'Pega al menos un código de caja.' };
+  if (lines.length > 25) return { products, error: 'Un pallet de retorno admite un máximo de 25 cajas.' };
   for (const [index, code] of lines.entries()) {
-    if (code.length > 100 || /[\t,;]/.test(code)) {
-      errors.push(index + 1);
-      continue;
-    }
     const key = code.toLocaleUpperCase();
-    if (parsed.has(key)) errors.push(index + 1);
-    else parsed.set(key, { productCode: code, quantity: 1, externalCode: true, returnStore: store });
+    if (code.length > 100 || /[\t,;]/.test(code))
+      return { products, error: `El código de la línea ${index + 1} no es válido.` };
+    if (seen.has(key)) return { products, error: `El código ${code} está repetido. Cada caja debe tener un código único.` };
+    seen.add(key);
+    const prior = existing.get(key), returnStore = prior?.returnStore || store;
+    if (!returnStore) return { products, error: `Indica la tienda de origen para el código ${code}.` };
+    products.push({ productCode: code, description: '', quantity: 1, externalCode: true, returnStore });
   }
-  if (errors.length) {
-    toast(`Códigos inválidos o repetidos en las líneas ${errors.join(', ')}. Cada línea debe contener un código único.`);
-    return;
-  }
-  const rows = [...$('palletProductRows').querySelectorAll('.product-row')],
-    existing = new Set(rows.map((row) => row.querySelector('.product-code').value.trim().toLocaleUpperCase()).filter(Boolean));
-  const conflict = [...parsed.keys()].find((key) => existing.has(key));
-  if (conflict) {
-    toast(`El código ${parsed.get(conflict).productCode} ya está en este pallet.`);
-    return;
-  }
-  $('externalProductCodes').checked = true;
-  setExternalProductMode();
-  $('palletProductRows').insertAdjacentHTML('beforeend', productRowsMarkup([...parsed.values()]));
-  updateReturnBoxCount();
-  textarea.value = '';
-  toast(`Se agregaron ${parsed.size} código(s) externos, con cantidad 1 cada uno.`);
+  return { products, error: '' };
 }
 function readPalletProducts() {
   const products = [],
@@ -132,11 +110,12 @@ function renderPallets() {
         .map((p) => {
           const products = palletProducts(p),
             returnBoxes = products.filter((item) => item.externalCode).length,
+            palletLocation = p.locationId ? escapeHtml(locLabel(p.locationId)) : '<span class="missing-location">Sin ubicación</span>',
             detail = products.length && returnBoxes === products.length
-              ? `${returnBoxes} cajas de retorno · ${escapeHtml(locLabel(p.locationId))}`
+              ? `${returnBoxes} cajas de retorno · ${palletLocation}`
               : products.length
-                ? `${products.length} productos · ${palletQuantity(p)} unidades · ${escapeHtml(locLabel(p.locationId))}`
-              : `${escapeHtml(p.brand || 'Sin marca')} · ${Number(p.boxes || 0)} cajas · ${escapeHtml(locLabel(p.locationId))}`;
+                ? `${products.length} productos · ${palletQuantity(p)} unidades · ${palletLocation}`
+              : `${escapeHtml(p.brand || 'Sin marca')} · ${Number(p.boxes || 0)} cajas · ${palletLocation}`;
           return `<article class="item"><div class="item-main"><div class="item-title">${escapeHtml(p.code)} · ${escapeHtml(p.description)}</div><div class="item-sub">${detail}</div><div class="item-sub">Creado: ${escapeHtml(formatDateTime(p.createdAt))} · ${movementCountFor(p.code)} movimiento(s)</div>${p.placed_by_email ? `<div class="item-sub">Ubicado por ${escapeHtml(p.placed_by_email)} · ${escapeHtml(formatDateTime(p.placed_at))}</div>` : ''}${products.length ? `<div class="product-summary">${products.map((item) => `<span>${escapeHtml(item.productCode)} × ${Number(item.quantity)}${item.externalCode ? ` · Retorno · ${escapeHtml(item.returnStore || 'Tienda sin indicar')}` : ''}</span>`).join('')}</div>` : ''}<span class="pill ${p.status === 'active' ? '' : 'warn'}">${p.status === 'active' ? 'Activo' : p.status === 'empty' ? 'Vacío' : 'Baja'}</span></div><div class="item-actions"><button class="mini" data-edit-pallet="${p.id}" data-write>Editar</button><button class="mini" data-qr-pallet="${p.id}">QR</button><button class="mini" data-move-pallet="${p.id}" data-write>Mover</button><button class="mini" data-delete-pallet="${p.id}" data-role="admin" data-write hidden>Eliminar</button></div></article>`;
         })
         .join('')
@@ -154,6 +133,11 @@ function showPalletDialog(p = null, presetLocationId = '') {
   document.getElementById('returnStoreName').value = '';
   fillLocationOptions(p?.locationId || presetLocationId);
   const products = palletProducts(p);
+  if (p?.products?.length && p.products.every((item) => item.externalCode)) {
+    $('palletBulkCodes').value = products.map((item) => item.productCode).join('\n');
+    const stores = [...new Set(products.map((item) => item.returnStore).filter(Boolean))];
+    $('returnStoreName').value = stores.length === 1 ? stores[0] : '';
+  }
   $('palletProductRows').innerHTML = productRowsMarkup(products.length ? products : [{}]);
   setExternalProductMode();
   $('palletQrPreview').innerHTML = p
@@ -178,7 +162,8 @@ async function savePallet(event) {
     toast('La ubicación ya no existe. Actualiza el inventario e inténtalo nuevamente.');
     return;
   }
-  const result = readPalletProducts();
+  const isReturnMode = $('externalProductCodes').checked,
+    result = isReturnMode ? readReturnProducts(old) : readPalletProducts();
   if (result.error) {
     toast(result.error);
     if (result.duplicate) {
@@ -267,7 +252,7 @@ async function savePallet(event) {
     id: old?.id || uid('PAL'),
     code,
     locationId,
-    description: products.length ? 'Pallet mixto' : old?.description || 'Pallet vacío',
+    description: products.length ? (isExternal ? 'Retorno de tienda' : 'Pallet mixto') : old?.description || 'Pallet vacío',
     brand: old?.brand || '',
     products,
 
