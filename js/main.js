@@ -64,6 +64,7 @@ $('palletProductRows').addEventListener('click', (event) => {
 });
 
 async function init() {
+  setAppLoading(true, AUTH_DISABLED ? 'Preparando el inventario...' : 'Verificando sesiÛn...');
   const menuToggle = $('menuToggle'),
     mainTabs = $('mainTabs');
   menuToggle?.addEventListener('click', () => toggleMobileMenu());
@@ -87,6 +88,7 @@ async function init() {
     syncMessage('Modo local temporal. Los cambios se guardan en este dispositivo.');
     renderAll();
     updateConnectivity();
+    setAppLoading(false);
   }
   if ('serviceWorker' in navigator) {
     const hadController = !!navigator.serviceWorker.controller;
@@ -311,5 +313,6 @@ bindCatalog();
 
 init().catch((error) => {
   console.error(error);
+  setAppLoading(false);
   toast('Error inicializando la aplicaci√≥n: ' + error.message);
 });

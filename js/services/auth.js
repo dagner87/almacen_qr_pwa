@@ -1,4 +1,10 @@
 /* Sesión, perfiles y conexión con Supabase. */
+function setAppLoading(loading, message = 'Cargando...') {
+  const overlay = document.getElementById('appLoading');
+  if (!overlay) return;
+  document.getElementById('appLoadingMessage').textContent = message;
+  overlay.hidden = !loading;
+}
 function syncMessage(msg) {
   $('syncMessage').textContent = msg;
 }
@@ -8,6 +14,7 @@ function authMessage(msg) {
 }
 
 function showPasswordUpdate(user) {
+  setAppLoading(false);
   passwordRecoveryUser = user || null;
   $('authGate').hidden = false;
   $('appContent').hidden = true;
@@ -18,6 +25,7 @@ function showPasswordUpdate(user) {
 }
 
 function showLogin(message) {
+  setAppLoading(false);
   passwordRecoveryUser = null;
   $('loginForm').hidden = false;
   $('forgotPasswordForm').hidden = true;
@@ -74,11 +82,13 @@ async function loadProfile(user) {
 }
 
 async function signIn(e) {
+  setAppLoading(true, 'Validando acceso...');
   e.preventDefault();
   if (!supabaseClient) {
     try {
       await configureSupabase();
     } catch (err) {
+      setAppLoading(false);
       authMessage('No se pudo conectar con Supabase: ' + err.message);
       return;
     }
@@ -89,6 +99,7 @@ async function signIn(e) {
     password: $('loginPassword').value,
   });
   if (error) {
+    setAppLoading(false);
     authMessage('No se pudo iniciar sesión: ' + error.message);
     return;
   }
@@ -160,6 +171,7 @@ function updateConnectivity() {
   $('menuToggle').hidden = !AUTH_DISABLED && !currentUser;
 const operatorDeviceHome = currentProfile?.role === 'operator' && window.matchMedia('(max-width: 900px)').matches;
   document.body.classList.toggle('operator-device-home', operatorDeviceHome);
+  document.getElementById('operatorLauncher').hidden = !operatorDeviceHome;
   if (!AUTH_DISABLED && !currentUser) toggleMobileMenu(false);
   $('signedInAs').textContent = AUTH_DISABLED
     ? ''
@@ -190,9 +202,11 @@ const dashboardTab = document.querySelector('.tab[data-view="dashboard"]');
 }
 
 async function activateSession(user) {
+  setAppLoading(true, 'Preparando tu espacio de trabajo...');
   currentUser = user;
   try {
     currentProfile = await loadProfile(user);
+    updateConnectivity();
     $('authGate').hidden = true;
     $('appContent').hidden = false;
     const livePromise = startRealtime();
@@ -206,6 +220,7 @@ async function activateSession(user) {
     if (currentProfile.role === 'admin') renderAdminTools();
     if (live) authMessage('Sesión iniciada. Los cambios se sincronizan en tiempo real.');
     else syncMessage('Sin conexión Realtime; el inventario queda en solo consulta.');
+    setAppLoading(false);
   } catch (error) {
     lockApplication('No se pudo iniciar sesión: ' + error.message);
   }

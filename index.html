@@ -8,20 +8,21 @@
 </head>
 <body>
 <header class="topbar"><button id="menuToggle" class="menu-toggle" type="button" hidden aria-label="Abrir menu" aria-expanded="false" aria-controls="mainTabs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><div><div class="eyebrow">INVENTARIO · WMS LIGERO</div><h1>Almacén QR</h1></div><div class="topbar-actions"><span id="syncBadge" class="badge">Sin conexión</span><span id="signedInAs" class="small"></span><button id="signOutBtn" class="secondary" hidden>Cerrar sesión</button></div></header>
-<section id="authGate" class="auth-gate" hidden>
+<div id="appLoading" class="app-loading" role="status" aria-live="polite" hidden><div class="app-loading-card"><span class="app-loading-spinner" aria-hidden="true"></span><span id="appLoadingMessage">Verificando sesi�n...</span></div></div>
+<section id="authGate" class="auth-gate">
 <div class="panel auth-panel"><p class="eyebrow">ACCESO SEGURO</p><h2>Iniciar sesión</h2><p class="muted small">Ingresa con tu cuenta de usuario del almacén.</p>
-<form id="loginForm"><label>Usuario (correo electrónico)<input id="loginEmail" type="email" autocomplete="username" required></label><label>Contraseña<input id="loginPassword" type="password" autocomplete="current-password" required></label><button class="primary" type="submit">Entrar</button><button id="forgotPasswordBtn" class="auth-link" type="button">Olvidé mi contraseña</button></form>
+<form id="loginForm" hidden><label>Usuario (correo electrónico)<input id="loginEmail" type="email" autocomplete="username" required></label><label>Contraseña<input id="loginPassword" type="password" autocomplete="current-password" required></label><button class="primary" type="submit">Entrar</button><button id="forgotPasswordBtn" class="auth-link" type="button">Olvidé mi contraseña</button></form>
 <form id="forgotPasswordForm" hidden><p class="muted small">Enviaremos un enlace al correo indicado arriba para restablecer tu contraseña.</p><button class="primary" type="submit">Enviar enlace de recuperación</button><button id="backToLoginBtn" class="auth-link" type="button">Volver al inicio de sesión</button></form>
 <form id="updatePasswordForm" hidden><label>Nueva contraseña<input id="newPassword" type="password" autocomplete="new-password" minlength="6" required></label><label>Confirmar contraseña<input id="confirmPassword" type="password" autocomplete="new-password" minlength="6" required></label><button class="primary" type="submit">Guardar nueva contraseña</button></form>
-<p id="authMessage" class="muted small" role="status">Inicia sesión para acceder al almacén.</p></div>
+<p id="authMessage" class="muted small" role="status">Verificando la sesión...</p></div>
 </section>
-<main id="appContent">
+<main id="appContent" hidden>
 <nav id="mainTabs" class="tabs" aria-label="Secciones">
 <button class="tab active" data-view="dashboard" data-module="dashboard">Inicio</button><button class="tab" data-view="search" data-module="search">Buscar producto</button><button class="tab" data-view="locations" data-module="locations">Ubicaciones</button><button class="tab" data-view="pallets" data-module="pallets">Pallets</button><button class="tab" data-view="inventory" data-role="admin" hidden>Inventario</button><button class="tab" data-view="scan" data-module="scan">Escanear</button><button class="tab" data-view="admin" data-role="admin" hidden>Administrar</button><button class="tab" data-view="settings" data-role="admin" hidden>Configuración</button><button class="tab" data-view="moves" data-module="moves">Movimientos</button>
 </nav>
 <nav id="breadcrumb" class="breadcrumb" aria-label="Ruta de navegaci�n"><ol><li aria-current="page">Inicio</li></ol></nav>
 <section id="dashboard" class="view active">
-<div id="operatorLauncher" class="operator-launcher">
+<div id="operatorLauncher" class="operator-launcher" hidden>
   <div class="operator-launcher-head"><p class="eyebrow">ALMACEN � OPERADOR</p><h2>�Qu� necesitas hacer?</h2><p>Accesos r�pidos para trabajar desde el dispositivo.</p></div>
   <section class="operator-action-group"><h3>ENTRADA</h3><div class="operator-action-grid">
     <button type="button" class="operator-action" data-operator-action="new-pallet" data-module="pallets"><span class="operator-action-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M7 17 24 8l17 9-17 9-17-9Z"/><path d="M7 17v18l17 9 17-9V17M24 26v18M15 13l17 9"/></svg></span><strong>Registrar pallet</strong><small>Agregar productos y cantidades</small></button>

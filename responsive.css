@@ -172,7 +172,7 @@ img,canvas,svg,video{max-width:100%}
 
 @media(max-width:900px){
  body.operator-device-home #dashboard>:not(#operatorLauncher){display:none!important}
- body.operator-device-home #operatorLauncher{display:block}
+ body.operator-device-home #operatorLauncher:not([hidden]){display:block}
  .operator-launcher{max-width:680px;margin:0 auto;padding:4px 0 20px}
  .operator-launcher-head{margin:0 0 16px;padding:22px 20px;border-radius:18px;background:linear-gradient(135deg,#123f35,#17634e);color:#fff;box-shadow:0 8px 22px #123b321c}
  .operator-launcher-head .eyebrow{color:#d6f06d;margin:0 0 7px}
