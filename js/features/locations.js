@@ -2,9 +2,13 @@
 function renderLocations() {
   const q = $('locationSearch').value.trim(),
     level = $('levelFilter').value,
-    rack = $('rackFilter').value,
+    rack = currentProfile?.role === 'operator' ? '' : $('rackFilter').value,
     status = $('statusFilter').value;
+  const operatorView = currentProfile?.role === 'operator';
+  $('addRackBtn').hidden = operatorView;
   const rackSelect = $('rackFilter');
+  rackSelect.hidden = operatorView;
+  rackSelect.style.display = operatorView ? 'none' : '';
   const racks = [...new Set(state.locations.map(locationParts).map((p) => p.rack))].sort((a, b) => a - b);
   if (rackSelect.options.length !== racks.length + 1)
     rackSelect.innerHTML =
