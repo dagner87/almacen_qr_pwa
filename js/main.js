@@ -4,6 +4,9 @@ $('barcodeRackFilter').onchange = renderBarcodes;
 $('barcodeSearch').oninput = renderBarcodes;
 $('printBarcodes').onclick = printBarcodes;
 $('addPalletProduct').onclick = () => addProductRow();
+$('importPalletCodes').onclick = importBulkPalletCodes;
+$('externalProductCodes').onchange = setExternalProductMode;
+
 $('palletLocationInput').oninput = () => resolveLocationInput();
 $('palletLocationInput').onchange = () => resolveLocationInput(true);
 $('palletLocationInput').onblur = () => resolveLocationInput(true);
@@ -62,11 +65,14 @@ $('palletProductRows').addEventListener('change', (event) => {
 });
 $('palletProductRows').addEventListener('click', (event) => {
   const button = event.target.closest('.remove-product');
-  if (button) button.closest('.product-row').remove();
+  if (button) {
+    button.closest('.product-row').remove();
+    updateReturnBoxCount();
+  }
 });
 
 async function init() {
-  setAppLoading(true, AUTH_DISABLED ? 'Preparando el inventario...' : 'Verificando sesi�n...');
+  setAppLoading(true, AUTH_DISABLED ? 'Preparando el inventario...' : 'Verificando sesión...');
   const menuToggle = $('menuToggle'),
     mainTabs = $('mainTabs');
   menuToggle?.addEventListener('click', () => toggleMobileMenu());

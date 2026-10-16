@@ -3,18 +3,72 @@ function productRowsMarkup(products = []) {
   return products
     .map(
       (item) =>
-        `<div class="product-row"><label>Código<input class="product-code" list="catalogCodes" type="text" inputmode="numeric" maxlength="100" value="${escapeHtml(item.productCode || '')}" placeholder="Ej. 19575" autocomplete="off"></label><label>Descripción<input class="product-description" type="text" maxlength="200" value="${escapeHtml(productDescription(item))}" placeholder="Descripción del producto"></label><label>Cantidad<input class="product-quantity" type="number" min="1" step="1" value="${escapeHtml(item.quantity ?? '')}" placeholder="0"></label><button type="button" class="mini remove-product" aria-label="Quitar producto">Quitar</button></div>`,
+        `<div class="product-row${item.externalCode ? ' external-return-row' : ''}"><label>Código<input class="product-code" list="catalogCodes" type="text" inputmode="numeric" maxlength="100" value="${escapeHtml(item.productCode || '')}" placeholder="Ej. 19575" autocomplete="off"></label><label>Descripción<input class="product-description" type="text" maxlength="200" value="${escapeHtml(productDescription(item))}" placeholder="Descripción del producto"></label><label>Cantidad<input class="product-quantity" type="number" min="1" step="1" value="${escapeHtml(item.quantity ?? '')}" placeholder="0"></label><button type="button" class="mini remove-product" aria-label="Quitar producto">Quitar</button>${item.externalCode ? `<label class="product-store-label">Tienda de origen<input class="product-store" type="text" maxlength="100" value="${escapeHtml(item.returnStore || '')}" placeholder="Ej. Tienda Centro"></label>` : ''}</div>`,
     )
     .join('');
 }
 
 function addProductRow(product = {}) {
+  if ($('externalProductCodes').checked) product = { ...product, externalCode: true, returnStore: product.returnStore || $('returnStoreName').value.trim() };
   $('palletProductRows').insertAdjacentHTML('beforeend', productRowsMarkup([product]));
+  updateReturnBoxCount();
   const row = $('palletProductRows').lastElementChild;
   row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   row.querySelector('.product-code')?.focus({ preventScroll: true });
 }
 
+function setExternalProductMode() {
+  $('returnEntry').hidden = !$('externalProductCodes').checked;
+  updateReturnBoxCount();
+}
+
+function updateReturnBoxCount() {
+  $('returnBoxCount').textContent = [...$('palletProductRows').querySelectorAll('.product-row .product-store')].length;
+}
+
+function importBulkPalletCodes() {
+  const textarea = $('palletBulkCodes'),
+    store = $('returnStoreName').value.trim(),
+    lines = textarea.value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean),
+    parsed = new Map(),
+    errors = [];
+  if (!lines.length) {
+    toast('Pega primero una lista de códigos.');
+    textarea.focus();
+    return;
+  }
+  if (!store) {
+    toast('Indica la tienda de origen antes de agregar los códigos.');
+    $('returnStoreName').focus();
+    return;
+  }
+  for (const [index, code] of lines.entries()) {
+    if (code.length > 100 || /[\t,;]/.test(code)) {
+      errors.push(index + 1);
+      continue;
+    }
+    const key = code.toLocaleUpperCase();
+    if (parsed.has(key)) errors.push(index + 1);
+    else parsed.set(key, { productCode: code, quantity: 1, externalCode: true, returnStore: store });
+  }
+  if (errors.length) {
+    toast(`Códigos inválidos o repetidos en las líneas ${errors.join(', ')}. Cada línea debe contener un código único.`);
+    return;
+  }
+  const rows = [...$('palletProductRows').querySelectorAll('.product-row')],
+    existing = new Set(rows.map((row) => row.querySelector('.product-code').value.trim().toLocaleUpperCase()).filter(Boolean));
+  const conflict = [...parsed.keys()].find((key) => existing.has(key));
+  if (conflict) {
+    toast(`El código ${parsed.get(conflict).productCode} ya está en este pallet.`);
+    return;
+  }
+  $('externalProductCodes').checked = true;
+  setExternalProductMode();
+  $('palletProductRows').insertAdjacentHTML('beforeend', productRowsMarkup([...parsed.values()]));
+  updateReturnBoxCount();
+  textarea.value = '';
+  toast(`Se agregaron ${parsed.size} código(s) externos, con cantidad 1 cada uno.`);
+}
 function readPalletProducts() {
   const products = [],
     seen = new Map(),
@@ -22,6 +76,7 @@ function readPalletProducts() {
   for (const [index, row] of rows.entries()) {
     const productCode = row.querySelector('.product-code').value.trim(),
       description = row.querySelector('.product-description').value.trim(),
+      returnStore = row.querySelector('.product-store')?.value.trim() || '',
       quantityText = row.querySelector('.product-quantity').value.trim();
     if (!productCode && !description && !quantityText) continue;
     if (
@@ -47,7 +102,7 @@ function readPalletProducts() {
       };
     }
     seen.set(key, index);
-    products.push({ productCode, description, quantity: Number(quantityText) });
+    products.push({ productCode, description, quantity: Number(quantityText), ...(row.querySelector('.product-store') ? { externalCode: true, returnStore } : {}) });
   }
   return { products, error: '' };
 }
@@ -64,7 +119,7 @@ function renderPallets() {
             p.description,
             p.brand,
             p.notes,
-            ...palletProducts(p).flatMap((item) => [item.productCode, productDescription(item)]),
+            ...palletProducts(p).flatMap((item) => [item.productCode, item.returnStore, productDescription(item)]),
           ]
             .join(' ')
             .toLowerCase()
@@ -76,10 +131,13 @@ function renderPallets() {
     ? list
         .map((p) => {
           const products = palletProducts(p),
-            detail = products.length
-              ? `${products.length} productos · ${palletQuantity(p)} unidades · ${escapeHtml(locLabel(p.locationId))}`
+            returnBoxes = products.filter((item) => item.externalCode).length,
+            detail = products.length && returnBoxes === products.length
+              ? `${returnBoxes} cajas de retorno · ${escapeHtml(locLabel(p.locationId))}`
+              : products.length
+                ? `${products.length} productos · ${palletQuantity(p)} unidades · ${escapeHtml(locLabel(p.locationId))}`
               : `${escapeHtml(p.brand || 'Sin marca')} · ${Number(p.boxes || 0)} cajas · ${escapeHtml(locLabel(p.locationId))}`;
-          return `<article class="item"><div class="item-main"><div class="item-title">${escapeHtml(p.code)} · ${escapeHtml(p.description)}</div><div class="item-sub">${detail}</div><div class="item-sub">Creado: ${escapeHtml(formatDateTime(p.createdAt))} · ${movementCountFor(p.code)} movimiento(s)</div>${p.placed_by_email ? `<div class="item-sub">Ubicado por ${escapeHtml(p.placed_by_email)} · ${escapeHtml(formatDateTime(p.placed_at))}</div>` : ''}${products.length ? `<div class="product-summary">${products.map((item) => `<span>${escapeHtml(item.productCode)} × ${Number(item.quantity)}</span>`).join('')}</div>` : ''}<span class="pill ${p.status === 'active' ? '' : 'warn'}">${p.status === 'active' ? 'Activo' : p.status === 'empty' ? 'Vacío' : 'Baja'}</span></div><div class="item-actions"><button class="mini" data-edit-pallet="${p.id}" data-write>Editar</button><button class="mini" data-qr-pallet="${p.id}">QR</button><button class="mini" data-move-pallet="${p.id}" data-write>Mover</button><button class="mini" data-delete-pallet="${p.id}" data-role="admin" data-write hidden>Eliminar</button></div></article>`;
+          return `<article class="item"><div class="item-main"><div class="item-title">${escapeHtml(p.code)} · ${escapeHtml(p.description)}</div><div class="item-sub">${detail}</div><div class="item-sub">Creado: ${escapeHtml(formatDateTime(p.createdAt))} · ${movementCountFor(p.code)} movimiento(s)</div>${p.placed_by_email ? `<div class="item-sub">Ubicado por ${escapeHtml(p.placed_by_email)} · ${escapeHtml(formatDateTime(p.placed_at))}</div>` : ''}${products.length ? `<div class="product-summary">${products.map((item) => `<span>${escapeHtml(item.productCode)} × ${Number(item.quantity)}${item.externalCode ? ` · Retorno · ${escapeHtml(item.returnStore || 'Tienda sin indicar')}` : ''}</span>`).join('')}</div>` : ''}<span class="pill ${p.status === 'active' ? '' : 'warn'}">${p.status === 'active' ? 'Activo' : p.status === 'empty' ? 'Vacío' : 'Baja'}</span></div><div class="item-actions"><button class="mini" data-edit-pallet="${p.id}" data-write>Editar</button><button class="mini" data-qr-pallet="${p.id}">QR</button><button class="mini" data-move-pallet="${p.id}" data-write>Mover</button><button class="mini" data-delete-pallet="${p.id}" data-role="admin" data-write hidden>Eliminar</button></div></article>`;
         })
         .join('')
     : '<div class="empty">No hay pallets registrados.</div>';
@@ -91,9 +149,13 @@ function showPalletDialog(p = null, presetLocationId = '') {
   $('palletId').value = p?.id || '';
   $('palletDialogTitle').textContent = p ? 'Editar pallet' : 'Nuevo pallet';
   $('palletNotes').value = p?.notes || '';
+  document.getElementById('externalProductCodes').checked = Boolean(p?.products?.length && p.products.every((item) => item.externalCode));
+  document.getElementById('palletBulkCodes').value = '';
+  document.getElementById('returnStoreName').value = '';
   fillLocationOptions(p?.locationId || presetLocationId);
   const products = palletProducts(p);
   $('palletProductRows').innerHTML = productRowsMarkup(products.length ? products : [{}]);
+  setExternalProductMode();
   $('palletQrPreview').innerHTML = p
     ? `<button type="button" class="mini" id="previewExistingQr">Mostrar QR: ${escapeHtml(p.code)}</button>`
     : '';
@@ -113,7 +175,7 @@ async function savePallet(event) {
     selectedLocation = resolveLocationInput(true);
   const locationId = selectedLocation?.id || old?.locationId || null;
   if (locationId && !state.locations.some((location) => location.id === locationId)) {
-    toast('La ubicaci�n ya no existe. Actualiza el inventario e int�ntalo nuevamente.');
+    toast('La ubicación ya no existe. Actualiza el inventario e inténtalo nuevamente.');
     return;
   }
   const result = readPalletProducts();
@@ -129,10 +191,30 @@ async function savePallet(event) {
     }
     return;
   }
-  const products = result.products,
+  const products = result.products.map((item) => {
+      const { externalCode, ...plainItem } = item;
+      return externalCode ? { ...plainItem, externalCode: true } : plainItem;
+    }),
+    isExternal = products.some((item) => item.externalCode),
     mergePlans = new Map(),
     mergeSummary = [];
+  if (isExternal && products.some((item) => item.quantity !== 1)) {
+    toast('Cada código externo identifica una sola pieza; la cantidad debe ser 1.');
+    return;
+  }
+  if (isExternal && products.some((item) => !item.returnStore)) {
+    toast('Indica la tienda de origen para cada código de retorno.');
+    return;
+  }
   for (const product of products) {
+    if (product.externalCode) {
+      const duplicate = state.pallets.find((pallet) => pallet.id !== old?.id && palletProducts(pallet).some((item) => item.externalCode && String(item.productCode || '').trim().toLocaleUpperCase() === product.productCode.trim().toLocaleUpperCase()));
+      if (duplicate) {
+        toast(`El código externo ${product.productCode} ya está registrado en el pallet ${duplicate.code}.`);
+        return;
+      }
+      continue;
+    }
     const matches = findActiveProductMatches(product.productCode, old?.id);
     if (!matches.length) continue;
     const groups = new Map();
@@ -188,6 +270,7 @@ async function savePallet(event) {
     description: products.length ? 'Pallet mixto' : old?.description || 'Pallet vacío',
     brand: old?.brand || '',
     products,
+
     boxes,
     notes: $('palletNotes').value.trim(),
     status: boxes === 0 ? 'empty' : 'active',
@@ -214,7 +297,7 @@ async function savePallet(event) {
     };
   });
   try {
-    await saveCatalogFromProducts(products);
+    await saveCatalogFromProducts(products.filter((item) => !item.externalCode));
     let savedRows = [pallet, ...sourceUpdates];
     if (!AUTH_DISABLED) {
       const { data, error } = await supabaseClient.from('pallets').upsert(savedRows).select();

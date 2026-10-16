@@ -44,34 +44,35 @@ function paintProductLookup(pallets, locations) {
     target = $('productLookupResults');
   const query = input.value.trim().toLocaleLowerCase();
   if (!query) {
-    target.innerHTML = '<p class="muted small">Escribe un código o una descripción para ver la ubicación y las cantidades disponibles.</p>';
+    target.innerHTML = '<p class="muted small">Escribe un cÃ³digo o una descripciÃ³n para ver la ubicaciÃ³n y las cantidades disponibles.</p>';
     return;
   }
-  const locLabel = (id) => locations.find((x) => x.id === id)?.code || (id ? `(${id})` : 'Sin ubicación');
+  const locLabel = (id) => locations.find((x) => x.id === id)?.code || (id ? `(${id})` : 'Sin ubicaciÃ³n');
   const matches = [];
   for (const pallet of pallets) {
     if (pallet.status !== 'active') continue;
     for (const item of palletProducts(pallet)) {
       const productCode = String(item.productCode || '').toLocaleLowerCase(),
-        description = String(productDescription(item)).toLocaleLowerCase();
-      if (productCode.includes(query) || description.includes(query)) matches.push({ pallet, item });
+        description = String(productDescription(item)).toLocaleLowerCase(),
+        returnStore = String(item.returnStore || '').toLocaleLowerCase();
+      if (productCode.includes(query) || description.includes(query) || returnStore.includes(query)) matches.push({ pallet, item });
     }
   }
   if (!matches.length) {
-    target.innerHTML = '<div class="empty">No hay existencias activas para ese código o descripción.</div>';
+    target.innerHTML = '<div class="empty">No hay existencias activas para ese cÃ³digo o descripciÃ³n.</div>';
     return;
   }
   const operator = currentProfile?.role === 'operator',
     canAdjust = operator && canAccessModule('pallets'),
     total = matches.reduce((sum, row) => sum + Number(row.item.quantity || 0), 0);
-  target.innerHTML = `<p class="lookup-total">${total.toLocaleString()} unidad(es) en ${new Set(matches.map((row) => locLabel(row.pallet.locationId))).size} ubicación(es)</p><div class="operator-stock-results">${matches.map(({ pallet, item }) => `<article class="panel operator-stock-result"><div><strong>${escapeHtml(item.productCode)}</strong><div class="item-sub">${escapeHtml(productDescription(item))}</div><div class="item-sub">Ubicación: <b>${escapeHtml(locLabel(pallet.locationId))}</b> · Pallet ${escapeHtml(pallet.code)}</div></div><div class="operator-stock-controls"><span class="small muted">Actual: ${Number(item.quantity).toLocaleString()}</span>${canAdjust ? `<div class="operator-stock-edit"><button type="button" class="mini secondary" data-stock-delta="-1" data-stock-pallet="${escapeHtml(pallet.id)}" data-stock-code="${escapeHtml(item.productCode)}" aria-label="Restar una unidad">-</button><input type="number" min="0" step="1" inputmode="numeric" value="${Number(item.quantity)}" data-stock-value="${escapeHtml(pallet.id)}|${escapeHtml(item.productCode)}" aria-label="Nueva cantidad para ${escapeHtml(item.productCode)}"><button type="button" class="mini secondary" data-stock-delta="1" data-stock-pallet="${escapeHtml(pallet.id)}" data-stock-code="${escapeHtml(item.productCode)}" aria-label="Sumar una unidad">+</button><button type="button" class="primary" data-stock-save="${escapeHtml(pallet.id)}" data-stock-code="${escapeHtml(item.productCode)}">Guardar</button></div>` : ''}</div></article>`).join('')}</div>`;
+  target.innerHTML = `<p class="lookup-total">${total.toLocaleString()} unidad(es) en ${new Set(matches.map((row) => locLabel(row.pallet.locationId))).size} ubicaciÃ³n(es)</p><div class="operator-stock-results">${matches.map(({ pallet, item }) => `<article class="panel operator-stock-result"><div><strong>${escapeHtml(item.productCode)}</strong><div class="item-sub">${escapeHtml(productDescription(item))}</div>${item.returnStore ? `<div class="item-sub">Tienda de origen: <b>${escapeHtml(item.returnStore)}</b></div>` : ''}<div class="item-sub">UbicaciÃ³n: <b>${escapeHtml(locLabel(pallet.locationId))}</b> Â· Pallet ${escapeHtml(pallet.code)}</div></div><div class="operator-stock-controls"><span class="small muted">Actual: ${Number(item.quantity).toLocaleString()}</span>${canAdjust ? `<div class="operator-stock-edit"><button type="button" class="mini secondary" data-stock-delta="-1" data-stock-pallet="${escapeHtml(pallet.id)}" data-stock-code="${escapeHtml(item.productCode)}" aria-label="Restar una unidad">-</button><input type="number" min="0" step="1" inputmode="numeric" value="${Number(item.quantity)}" data-stock-value="${escapeHtml(pallet.id)}|${escapeHtml(item.productCode)}" aria-label="Nueva cantidad para ${escapeHtml(item.productCode)}"><button type="button" class="mini secondary" data-stock-delta="1" data-stock-pallet="${escapeHtml(pallet.id)}" data-stock-code="${escapeHtml(item.productCode)}" aria-label="Sumar una unidad">+</button><button type="button" class="primary" data-stock-save="${escapeHtml(pallet.id)}" data-stock-code="${escapeHtml(item.productCode)}">Guardar</button></div>` : ''}</div></article>`).join('')}</div>`;
 }
 
 async function updateOperatorProductQuantity(palletId, productCode, quantity) {
   if (!canWrite()) return;
   const pallet = state.pallets.find((item) => item.id === palletId);
   if (!pallet || pallet.status !== 'active') {
-    toast('El pallet ya no está activo. Actualiza la búsqueda.');
+    toast('El pallet ya no estÃ¡ activo. Actualiza la bÃºsqueda.');
     return;
   }
   const key = String(productCode || '').trim().toLocaleUpperCase(),
@@ -86,7 +87,7 @@ async function updateOperatorProductQuantity(palletId, productCode, quantity) {
       .map((item) => item === oldItem ? { ...item, quantity: next } : item)
       .filter((item) => Number(item.quantity) > 0),
     total = products.reduce((sum, item) => sum + Number(item.quantity || 0), 0),
-    updated = { ...pallet, products, boxes: total, status: total > 0 ? 'active' : 'empty', description: total > 0 ? pallet.description : 'Pallet vacío', updatedAt: now() };
+    updated = { ...pallet, products, boxes: total, status: total > 0 ? 'active' : 'empty', description: total > 0 ? pallet.description : 'Pallet vacÃ­o', updatedAt: now() };
   try {
     let saved = updated;
     if (!AUTH_DISABLED) {

@@ -39,7 +39,7 @@ async function refreshCatalog() {
       productCatalog = data || [];
     } catch (error) {
       productCatalog = [];
-      console.warn('No se pudo actualizar el cat·logo de productos:', error.message);
+      console.warn('No se pudo actualizar el cat√°logo de productos:', error.message);
     }
   } else {
     productCatalog = Array.isArray(state.settings.productCatalog) ? state.settings.productCatalog : [];
@@ -74,7 +74,7 @@ async function saveCatalogFromProducts(products) {
     return;
   }
 
-  if (!supabaseClient || !currentUser) throw new Error('Inicia sesiÛn para actualizar el cat·logo de productos.');
+  if (!supabaseClient || !currentUser) throw new Error('Inicia sesi√≥n para actualizar el cat√°logo de productos.');
   const additions = [];
   for (const { code, description } of uniqueProducts.values()) {
     const found = catalogLookup(code);
@@ -99,9 +99,10 @@ async function saveCatalogFromProducts(products) {
 async function ensureCatalogCoverage() {
   const missing = new Map();
   for (const pallet of state.pallets) {
+
     for (const item of palletProducts(pallet)) {
       const code = String(item.productCode || '').trim();
-      if (!code) continue;
+      if (!code || item.externalCode) continue;
       const entry = catalogLookup(code);
       if (!entry?.id) {
         const key = code.toLocaleUpperCase();
