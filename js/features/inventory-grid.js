@@ -1,5 +1,7 @@
 /* Pantalla Inventario: cuadrÃ­cula editable de existencias (solo administrador). */
 const inventoryPending = new Map();
+const INVENTORY_PAGE_SIZE = 50;
+let inventoryPage = 1;
 const STOCK_ACTIONS = ['Entrada de stock', 'Salida de stock', 'Ajuste de stock', 'ActualizaciÃ³n de stock'];
 
 function inventoryKey(pallet, item) {
@@ -17,30 +19,48 @@ function inventoryRows() {
   return rows.sort((a, b) => collator(a.loc, b.loc) || collator(a.item.productCode, b.item.productCode));
 }
 
+function normalizeInventoryFilter(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase();
+}
+
 function visibleInventoryRows() {
-  const query = ($('inventorySearch')?.value || '').trim().toLocaleLowerCase();
+  const query = normalizeInventoryFilter(($('inventorySearch')?.value || '').trim());
   return inventoryRows().filter(
     (row) =>
       !query ||
-      [row.item.productCode, productDescription(row.item), row.pallet.code, row.loc].some((value) =>
-        String(value || '')
-          .toLocaleLowerCase()
-          .includes(query),
-      ),
+      [row.item.productCode, productDescription(row.item)].some((value) => normalizeInventoryFilter(value).includes(query),),
   );
+}
+
+function renderInventoryPagination(total, start, end) {
+  const target = $('inventoryPagination');
+  if (!target) return;
+  const pages = Math.max(1, Math.ceil(total / INVENTORY_PAGE_SIZE));
+  target.hidden = total <= INVENTORY_PAGE_SIZE;
+  target.innerHTML = target.hidden
+    ? ''
+    : `<button class="secondary" type="button" data-inventory-page="${inventoryPage - 1}" ${inventoryPage <= 1 ? 'disabled' : ''}>Anterior</button><span>Página ${inventoryPage} de ${pages} · ${start + 1}–${end} de ${total}</span><button class="secondary" type="button" data-inventory-page="${inventoryPage + 1}" ${inventoryPage >= pages ? 'disabled' : ''}>Siguiente</button>`;
 }
 
 function renderInventory() {
   const target = $('inventoryGrid');
   if (!target) return;
-  const rows = visibleInventoryRows();
+  const rows = visibleInventoryRows(),
+    pages = Math.max(1, Math.ceil(rows.length / INVENTORY_PAGE_SIZE));
+  inventoryPage = Math.min(Math.max(1, inventoryPage), pages);
+  const start = (inventoryPage - 1) * INVENTORY_PAGE_SIZE,
+    pageRows = rows.slice(start, start + INVENTORY_PAGE_SIZE);
   if (!rows.length) {
     target.innerHTML = '<div class="empty">No hay existencias que coincidan con el filtro.</div>';
+    renderInventoryPagination(0, 0, 0);
     updateInventorySummary();
     renderStockMoves();
     return;
   }
-  target.innerHTML = `<table class="inventory-grid"><thead><tr><th class="c-loc">Ubicaci\u00f3n</th><th class="c-pallet">Pallet</th><th class="c-code">C\u00f3digo</th><th class="c-desc">Descripci\u00f3n</th><th class="num c-stock">Stock</th><th class="num in">+ Entrada</th><th class="num out">\u2212 Salida</th><th class="num">Nuevo stock</th></tr></thead><tbody>${rows
+  target.innerHTML = `<table class="inventory-grid"><thead><tr><th class="c-loc">Ubicaci\u00f3n</th><th class="c-pallet">Pallet</th><th class="c-code">C\u00f3digo</th><th class="c-desc">Descripci\u00f3n</th><th class="num c-stock">Stock</th><th class="num in">+ Entrada</th><th class="num out">\u2212 Salida</th><th class="num">Nuevo stock</th></tr></thead><tbody>${pageRows
     .map(({ pallet, item, key, loc }) => {
       const current = Number(item.quantity || 0),
         pending = inventoryPending.get(key),
@@ -51,10 +71,10 @@ function renderInventory() {
     })
     .join('')}</tbody></table>`;
   target.querySelectorAll('tr[data-key]').forEach(markInventoryRow);
+  renderInventoryPagination(rows.length, start, Math.min(start + pageRows.length, rows.length));
   updateInventorySummary();
   renderStockMoves();
 }
-
 function inventoryRowValues(tr) {
   const read = (field) => tr.querySelector(`[data-f="${field}"]`);
   const entry = Number(read('in').value || 0),
@@ -103,14 +123,34 @@ function onInventoryInput(event) {
 function onInventoryKeydown(event) {
   const input = event.target;
   if (!input.dataset?.f || !['Enter', 'ArrowDown', 'ArrowUp'].includes(event.key)) return;
-  const inputs = [...$('inventoryGrid').querySelectorAll(`input[data-f="${input.dataset.f}"]`)],
+  const field = input.dataset.f,
+    inputs = [...$('inventoryGrid').querySelectorAll(`input[data-f="${field}"]`)],
     index = inputs.indexOf(input),
-    next = inputs[index + (event.key === 'ArrowUp' ? -1 : 1)];
+    goingUp = event.key === 'ArrowUp',
+    next = inputs[index + (goingUp ? -1 : 1)];
   event.preventDefault();
   if (next) {
     next.focus();
     next.select();
+    return;
   }
+  const pages = Math.max(1, Math.ceil(visibleInventoryRows().length / INVENTORY_PAGE_SIZE));
+  if (goingUp && inventoryPage > 1) inventoryPage--;
+  else if (!goingUp && inventoryPage < pages) inventoryPage++;
+  else return;
+  renderInventory();
+  const pageInputs = [...$('inventoryGrid').querySelectorAll(`input[data-f="${field}"]`)],
+    destination = goingUp ? pageInputs[pageInputs.length - 1] : pageInputs[0];
+  destination?.focus();
+  destination?.select();
+}
+function hasInvalidInventoryPending() {
+  const currentByKey = new Map(inventoryRows().map(({ key, item }) => [key, Number(item.quantity || 0)]));
+  return [...inventoryPending.entries()].some(([key, change]) => {
+    const current = currentByKey.get(key),
+      next = Number(current || 0) + change.in - change.out;
+    return current == null || !Number.isSafeInteger(next) || next < 0;
+  });
 }
 
 function updateInventorySummary() {
@@ -121,14 +161,13 @@ function updateInventorySummary() {
   const changes = [...inventoryPending.values()];
   const totalIn = changes.reduce((sum, change) => sum + change.in, 0),
     totalOut = changes.reduce((sum, change) => sum + change.out, 0),
-    invalid = !!$('inventoryGrid').querySelector('tr.invalid');
+    invalid = hasInvalidInventoryPending();
   summary.textContent = changes.length
     ? `${changes.length} cambio(s) sin guardar \u00b7 Entradas: ${totalIn.toLocaleString()} \u00b7 Salidas: ${totalOut.toLocaleString()}${invalid ? ' \u00b7 Hay valores inv\u00e1lidos' : ''}`
     : `${visibleInventoryRows().length.toLocaleString()} l\u00ednea(s) de producto`;
   saveButton.disabled = !changes.length || invalid;
   discardButton.disabled = !changes.length;
 }
-
 function renderStockMoves() {
   const target = $('inventoryMoves');
   if (!target) return;
@@ -157,7 +196,7 @@ let inventoryResave = false;
 
 // Al salir de una celda se guarda sola; si ya hay un guardado en curso, se repite al terminar.
 async function autoSaveInventory() {
-  if (!inventoryPending.size || $('inventoryGrid').querySelector('tr.invalid')) return;
+  if (!inventoryPending.size || hasInvalidInventoryPending()) return;
   if (inventorySaving) {
     inventoryResave = true;
     return;
@@ -326,7 +365,16 @@ function bindInventoryGrid() {
     if (event.target.dataset?.f) autoSaveInventory();
   });
   grid.addEventListener('focusin', (event) => event.target.select?.());
-  $('inventorySearch').oninput = renderInventory;
+  $('inventorySearch').oninput = () => {
+    inventoryPage = 1;
+    renderInventory();
+  };
+  $('inventoryPagination').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-inventory-page]');
+    if (!button || button.disabled) return;
+    inventoryPage = Number(button.dataset.inventoryPage);
+    renderInventory();
+  });
   $('inventorySave').onclick = () => saveInventoryChanges();
   $('inventoryDiscard').onclick = () => {
     inventoryPending.clear();

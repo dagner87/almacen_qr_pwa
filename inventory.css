@@ -26,3 +26,5 @@
   .inventory-grid-wrap { max-height: calc(100vh - 380px); }
   .inventory-grid td.cell { width: 92px; }
 }
+
+.inventory-pagination{display:flex;align-items:center;justify-content:center;gap:12px;margin:12px 0}.inventory-pagination[hidden]{display:none}.inventory-pagination span{font-size:13px;color:var(--muted);text-align:center}.inventory-pagination button:disabled{opacity:.5;cursor:default}@media(max-width:420px){.inventory-pagination{gap:7px}.inventory-pagination button{padding:9px 10px}.inventory-pagination span{font-size:11px}}

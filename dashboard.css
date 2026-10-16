@@ -1,4 +1,4 @@
-.dash-hero{background:linear-gradient(120deg,#0e3128 0%,#8cefd4 100%);color:#fff;border-radius:20px;padding:28px;display:flex;justify-content:space-between;align-items:center;gap:16px;box-shadow:0 10px 30px #123b3226}
+.dash-hero{background:linear-gradient(120deg,#0e3128 0%,#1c5c4b  100%);color:#fff;border-radius:20px;padding:28px;display:flex;justify-content:space-between;align-items:center;gap:16px;box-shadow:0 10px 30px #123b3226}
 .dash-hero h2{margin:4px 0 6px;font-size:clamp(24px,4vw,34px);letter-spacing:-.8px;text-transform:capitalize}
 .dash-hero p{margin:0;color:#cfe3da}
 .dash-hero .eyebrow{color:var(--lime);opacity:1}
