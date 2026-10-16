@@ -232,6 +232,7 @@ async function savePallet(event) {
     };
   });
   try {
+    await saveCatalogFromProducts(products);
     let savedRows = [pallet, ...sourceUpdates];
     if (!AUTH_DISABLED) {
       const { data, error } = await supabaseClient.from('pallets').upsert(savedRows).select();
@@ -239,7 +240,6 @@ async function savePallet(event) {
       savedRows = data || savedRows;
     }
     await putMany('pallets', savedRows);
-    await saveCatalogFromProducts(products);
     const savedPallet = savedRows.find((item) => item.id === pallet.id) || pallet;
     if (AUTH_DISABLED) {
       const action = !old ? 'Alta de pallet' : old.locationId !== locationId ? 'Movimiento' : 'Actualización de stock';

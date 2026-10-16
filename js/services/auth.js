@@ -188,6 +188,8 @@ async function activateSession(user) {
     $('appContent').hidden = false;
     const livePromise = startRealtime();
     await syncFromCloud();
+    await refreshCatalog();
+    await ensureCatalogCoverage();
     const live = await Promise.race([livePromise, new Promise((resolve) => setTimeout(() => resolve(false), 6000))]);
     if (live && currentProfile.role === 'admin') await syncToCloud();
     updateConnectivity();

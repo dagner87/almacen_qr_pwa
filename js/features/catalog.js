@@ -27,60 +27,90 @@ function catalogLookup(code) {
 }
 
 function productDescription(item) {
-  return catalogLookup(item.productCode)?.description || item.description || '';
+  const entry = catalogLookup(item.productCode);
+  return entry ? String(entry.description || '') : String(item.description || '');
 }
 
 async function refreshCatalog() {
   if (supabaseClient && !AUTH_DISABLED) {
     try {
-      const { data } = await supabaseClient.from('product_catalog').select('*').order('sort_order');
+      const { data, error } = await supabaseClient.from('product_catalog').select('*').order('sort_order');
+      if (error) throw error;
       productCatalog = data || [];
     } catch (error) {
       productCatalog = [];
+      console.warn('No se pudo actualizar el catálogo de productos:', error.message);
     }
+  } else {
+    productCatalog = Array.isArray(state.settings.productCatalog) ? state.settings.productCatalog : [];
   }
   catalogIndex = null;
   renderCatalogOptions();
 }
 
-/* El catï¿½logo manda: al guardar un pallet se actualizan las descripciones cambiadas y se agregan los cï¿½digos nuevos. */
 async function saveCatalogFromProducts(products) {
-  if (!supabaseClient || AUTH_DISABLED || currentProfile?.role !== 'admin') return;
-  try {
-    if (!productCatalog.length) {
-      const seed = CATALOG_SEED.map(([code, description, unit], i) => ({ sort_order: i + 1, code, description, unit }));
-      const { error } = await supabaseClient.from('product_catalog').insert(seed);
-      if (error) throw error;
-      await refreshCatalog();
+  const uniqueProducts = new Map();
+  for (const item of products) {
+    const code = String(item.productCode || '').trim();
+    if (code) uniqueProducts.set(code.toLocaleUpperCase(), { code, description: String(item.description || '').trim() });
+  }
+  if (!uniqueProducts.size) return;
+
+  if (AUTH_DISABLED) {
+    const rows = productCatalog.length
+      ? productCatalog.map((row) => ({ ...row }))
+      : CATALOG_SEED.map(([code, description, unit], i) => ({ sort_order: i + 1, code, description, unit }));
+    for (const { code, description } of uniqueProducts.values()) {
+      const key = code.toLocaleUpperCase();
+      const row = rows.find((item) => catalogKeys(item.code).includes(key));
+      if (row) row.description = description;
+      else rows.push({ sort_order: rows.length + 1, code, description, unit: 'box' });
     }
-    const adds = [],
-      queued = new Set();
-    for (const item of products) {
-      const code = String(item.productCode || '').trim(),
-        description = String(item.description || '').trim(),
-        found = catalogLookup(code);
-      if (!code || !description || queued.has(code.toLocaleUpperCase())) continue;
-      if (!found) {
-        queued.add(code.toLocaleUpperCase());
-        adds.push({ sort_order: productCatalog.length + adds.length + 1, code, description, unit: 'box' });
-      } else if (found.id && found.description !== description) {
+    productCatalog = rows;
+    await put('settings', { key: 'productCatalog', value: rows });
+    state.settings.productCatalog = rows;
+    catalogIndex = null;
+    renderCatalogOptions();
+    return;
+  }
+
+  if (!supabaseClient || !currentUser) throw new Error('Inicia sesión para actualizar el catálogo de productos.');
+  const additions = [];
+  for (const { code, description } of uniqueProducts.values()) {
+    const found = catalogLookup(code);
+    if (found?.id) {
+      if (String(found.description || '') !== description) {
         const { error } = await supabaseClient
           .from('product_catalog')
           .update({ description, updated_at: new Date().toISOString() })
           .eq('id', found.id);
         if (error) throw error;
       }
+    } else {
+      additions.push({ sort_order: productCatalog.length + additions.length + 1, code, description, unit: 'box' });
     }
-    if (adds.length) {
-      const { error } = await supabaseClient.from('product_catalog').insert(adds);
-      if (error) throw error;
-    }
-    await refreshCatalog();
-  } catch (error) {
-    toast('Pallet guardado, pero no se pudo actualizar el catï¿½logo: ' + error.message);
   }
+  if (additions.length) {
+    const { error } = await supabaseClient.from('product_catalog').insert(additions);
+    if (error) throw error;
+  }
+  await refreshCatalog();
 }
-
+async function ensureCatalogCoverage() {
+  const missing = new Map();
+  for (const pallet of state.pallets) {
+    for (const item of palletProducts(pallet)) {
+      const code = String(item.productCode || '').trim();
+      if (!code) continue;
+      const entry = catalogLookup(code);
+      if (!entry?.id) {
+        const key = code.toLocaleUpperCase();
+        if (!missing.has(key)) missing.set(key, { productCode: code, description: entry?.description || item.description || '' });
+      }
+    }
+  }
+  if (missing.size) await saveCatalogFromProducts([...missing.values()]);
+}
 function renderCatalogOptions() {
   const list = $('catalogCodes');
   if (!list) return;
@@ -100,7 +130,7 @@ function autofillProductDescription(input) {
   const row = input.closest('.product-row'),
     description = row?.querySelector('.product-description'),
     found = catalogLookup(input.value);
-  if (found?.description && description && !description.value.trim()) description.value = found.description;
+  if (description) description.value = found?.description || "";
 }
 
 async function loadInitialCatalog() {
@@ -120,7 +150,7 @@ function bindCatalog() {
   const rows = $('palletProductRows');
   rows.addEventListener('change', (event) => event.target.matches('.product-code') && autofillProductDescription(event.target));
   rows.addEventListener('input', (event) => {
-    if (event.target.matches('.product-code') && catalogLookup(event.target.value)) autofillProductDescription(event.target);
+    if (event.target.matches('.product-code')) autofillProductDescription(event.target);
   });
   const button = $('loadCatalog');
   if (button)

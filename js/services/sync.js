@@ -39,6 +39,9 @@ async function startRealtime() {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'moves' }, (payload) =>
       applyRemoteChange('moves', payload),
     )
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'product_catalog' }, () => {
+      refreshCatalog().then(renderAll);
+    })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, (payload) =>
       applyRemoteChange('profiles', payload),
     );

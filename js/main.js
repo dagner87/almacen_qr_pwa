@@ -50,9 +50,11 @@ $('palletProductRows').addEventListener('click', (event) => {
 async function init() {
   db = await openDb();
   await loadState();
+  await refreshCatalog();
   if (AUTH_DISABLED) {
     currentUser = { id: 'local-user', email: 'Modo local' };
     currentProfile = { user_id: 'local-user', email: 'Modo local', role: 'admin' };
+    await ensureCatalogCoverage();
     realtimeReady = true;
     $('authGate').hidden = true;
     $('appContent').hidden = false;

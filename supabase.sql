@@ -460,3 +460,33 @@ for all to authenticated using (public.is_admin()) with check (public.is_admin()
 
 grant select, insert, update, delete on public.stock_limits to authenticated;
 grant select, insert, update on public.alert_config to authenticated;
+-- Catálogo de descripciones por código de producto.
+create table if not exists public.product_catalog (
+  id bigint generated always as identity primary key,
+  sort_order integer not null default 0,
+  code text not null default '',
+  description text not null default '',
+  unit text not null default 'box' check (unit in ('box','units')),
+  updated_at timestamptz not null default now()
+);
+create index if not exists product_catalog_code_idx on public.product_catalog (code);
+alter table public.product_catalog enable row level security;
+drop policy if exists "authenticated can read catalog" on public.product_catalog;
+drop policy if exists "admins manage catalog" on public.product_catalog;
+drop policy if exists "authenticated insert product catalog" on public.product_catalog;
+drop policy if exists "authenticated update product descriptions" on public.product_catalog;
+drop policy if exists "admins delete product catalog" on public.product_catalog;
+create policy "authenticated can read catalog" on public.product_catalog for select to authenticated using (true);
+create policy "authenticated insert product catalog" on public.product_catalog for insert to authenticated with check (true);
+create policy "authenticated update product descriptions" on public.product_catalog for update to authenticated using (true) with check (true);
+create policy "admins delete product catalog" on public.product_catalog for delete to authenticated using (public.is_admin());
+revoke update on public.product_catalog from authenticated;
+grant select, insert, delete on public.product_catalog to authenticated;
+grant update (description, updated_at) on public.product_catalog to authenticated;
+do $$
+begin
+  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'product_catalog') then
+    alter publication supabase_realtime add table public.product_catalog;
+  end if;
+end;
+$$;
