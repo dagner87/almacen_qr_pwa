@@ -44,11 +44,10 @@ function paintProductLookup(pallets, locations) {
     target = $('productLookupResults');
   const query = input.value.trim().toLocaleLowerCase();
   if (!query) {
-    target.innerHTML =
-      '<p class="muted small">Escribe un c\u00f3digo o una descripci\u00f3n para ver la ubicaci\u00f3n y las cantidades disponibles.</p>';
+    target.innerHTML = '<p class="muted small">Escribe un código o una descripción para ver la ubicación y las cantidades disponibles.</p>';
     return;
   }
-  const locLabel = (id) => locations.find((x) => x.id === id)?.code || (id ? `(${id})` : 'Sin ubicaci\u00f3n');
+  const locLabel = (id) => locations.find((x) => x.id === id)?.code || (id ? `(${id})` : 'Sin ubicación');
   const matches = [];
   for (const pallet of pallets) {
     if (pallet.status !== 'active') continue;
@@ -59,10 +58,52 @@ function paintProductLookup(pallets, locations) {
     }
   }
   if (!matches.length) {
-    target.innerHTML = '<div class="empty">No hay existencias activas para ese c\u00f3digo o descripci\u00f3n.</div>';
+    target.innerHTML = '<div class="empty">No hay existencias activas para ese código o descripción.</div>';
     return;
   }
-  const showPallet = currentProfile?.role !== 'operator',
+  const operator = currentProfile?.role === 'operator',
+    canAdjust = operator && canAccessModule('pallets'),
     total = matches.reduce((sum, row) => sum + Number(row.item.quantity || 0), 0);
-  target.innerHTML = `<p class="lookup-total">${total.toLocaleString()} unidad(es) en ${matches.length} pallet(s)</p><div class="table-scroll"><table class="inventory-table"><thead><tr><th>C\u00f3digo</th>${showPallet ? '<th>Descripci\u00f3n</th>' : ''}<th>Cantidad</th>${showPallet ? '<th>Pallet</th>' : ''}<th>Ubicaci\u00f3n</th></tr></thead><tbody>${matches.map(({ pallet, item }) => `<tr><td>${escapeHtml(item.productCode)}</td>${showPallet ? `<td>${escapeHtml(productDescription(item))}</td>` : ''}<td>${Number(item.quantity).toLocaleString()}</td>${showPallet ? `<td>${escapeHtml(pallet.code)}</td>` : ''}<td class="location-highlight">${escapeHtml(locLabel(pallet.locationId))}</td></tr>`).join('')}</tbody></table></div>`;
+  target.innerHTML = `<p class="lookup-total">${total.toLocaleString()} unidad(es) en ${new Set(matches.map((row) => locLabel(row.pallet.locationId))).size} ubicación(es)</p><div class="operator-stock-results">${matches.map(({ pallet, item }) => `<article class="panel operator-stock-result"><div><strong>${escapeHtml(item.productCode)}</strong><div class="item-sub">${escapeHtml(productDescription(item))}</div><div class="item-sub">Ubicación: <b>${escapeHtml(locLabel(pallet.locationId))}</b> · Pallet ${escapeHtml(pallet.code)}</div></div><div class="operator-stock-controls"><span class="small muted">Actual: ${Number(item.quantity).toLocaleString()}</span>${canAdjust ? `<div class="operator-stock-edit"><button type="button" class="mini secondary" data-stock-delta="-1" data-stock-pallet="${escapeHtml(pallet.id)}" data-stock-code="${escapeHtml(item.productCode)}" aria-label="Restar una unidad">-</button><input type="number" min="0" step="1" inputmode="numeric" value="${Number(item.quantity)}" data-stock-value="${escapeHtml(pallet.id)}|${escapeHtml(item.productCode)}" aria-label="Nueva cantidad para ${escapeHtml(item.productCode)}"><button type="button" class="mini secondary" data-stock-delta="1" data-stock-pallet="${escapeHtml(pallet.id)}" data-stock-code="${escapeHtml(item.productCode)}" aria-label="Sumar una unidad">+</button><button type="button" class="primary" data-stock-save="${escapeHtml(pallet.id)}" data-stock-code="${escapeHtml(item.productCode)}">Guardar</button></div>` : ''}</div></article>`).join('')}</div>`;
+}
+
+async function updateOperatorProductQuantity(palletId, productCode, quantity) {
+  if (!canWrite()) return;
+  const pallet = state.pallets.find((item) => item.id === palletId);
+  if (!pallet || pallet.status !== 'active') {
+    toast('El pallet ya no está activo. Actualiza la búsqueda.');
+    return;
+  }
+  const key = String(productCode || '').trim().toLocaleUpperCase(),
+    oldItem = palletProducts(pallet).find((item) => String(item.productCode || '').trim().toLocaleUpperCase() === key),
+    next = Number(quantity);
+  if (!oldItem || !Number.isSafeInteger(next) || next < 0) {
+    toast('Escribe una cantidad entera igual o mayor que cero.');
+    return;
+  }
+  if (next === Number(oldItem.quantity)) return;
+  const products = palletProducts(pallet)
+      .map((item) => item === oldItem ? { ...item, quantity: next } : item)
+      .filter((item) => Number(item.quantity) > 0),
+    total = products.reduce((sum, item) => sum + Number(item.quantity || 0), 0),
+    updated = { ...pallet, products, boxes: total, status: total > 0 ? 'active' : 'empty', description: total > 0 ? pallet.description : 'Pallet vacío', updatedAt: now() };
+  try {
+    let saved = updated;
+    if (!AUTH_DISABLED) {
+      const { data, error } = await supabaseClient.from('pallets').update(updated).eq('id', pallet.id).select().single();
+      if (error) throw error;
+      saved = data;
+    }
+    await put('pallets', saved);
+    if (AUTH_DISABLED) {
+      const action = next > Number(oldItem.quantity) ? 'Entrada de stock' : 'Salida de stock';
+      await logMove(action, pallet.code, pallet.locationId, pallet.locationId, `${productCode}: ${oldItem.quantity} a ${next}`, [{ ...oldItem, quantity: next }]);
+    }
+    await loadState();
+    notifyStockChange();
+    renderProductLookup(true);
+    toast(`${productCode}: cantidad actualizada a ${next}.`);
+  } catch (error) {
+    toast('No se pudo actualizar la cantidad: ' + error.message);
+  }
 }

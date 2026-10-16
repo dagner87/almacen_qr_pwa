@@ -149,3 +149,51 @@ img,canvas,svg,video{max-width:100%}
   .kpi strong{font-size:24px}
   .dash-hero{padding:22px}
 }
+.menu-toggle{display:none}
+.menu-toggle[hidden]{display:none}
+/* Menu hamburguesa en telefonos y tabletas. */
+@media(max-width:900px){
+  body{padding-bottom:env(safe-area-inset-bottom)}
+  .topbar{justify-content:flex-start}
+  .topbar>div:first-of-type{flex:1;min-width:0}
+  .menu-toggle{display:flex;flex:none;align-items:center;justify-content:center;width:42px;height:42px;padding:9px;border:1px solid #ffffff55;border-radius:10px;background:#ffffff16;color:#fff}
+  .menu-toggle svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+  .tabs{display:none;position:fixed;top:calc(56px + env(safe-area-inset-top));right:12px;bottom:auto;left:12px;z-index:31;flex-direction:column;align-items:stretch;gap:4px;max-height:calc(100dvh - 72px - env(safe-area-inset-top));overflow-y:auto;margin:0;padding:8px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 35px #10251c35}
+  .tabs.open{display:flex}
+  .tab{flex:none;width:100%;min-height:48px;padding:11px 14px;text-align:left;font-size:15px;border-radius:9px;background:transparent}
+  .tab.active{background:var(--green);color:#fff}
+}
+@media(min-width:621px) and (max-width:900px){
+  main{grid-template-columns:minmax(0,1fr);column-gap:0}
+  main>:not(.tabs){grid-column:1}
+}
+
+@media(max-width:380px){.topbar{gap:5px}.menu-toggle{width:38px;height:38px}.topbar h1{font-size:17px}.badge{font-size:10px;padding:4px 6px}.topbar-actions{gap:4px}#signOutBtn{font-size:11px;padding:7px 7px}}
+
+@media(max-width:900px){
+ body.operator-device-home #dashboard>:not(#operatorLauncher){display:none!important}
+ body.operator-device-home #operatorLauncher{display:block}
+ .operator-launcher{max-width:680px;margin:0 auto;padding:4px 0 20px}
+ .operator-launcher-head{margin:0 0 16px;padding:22px 20px;border-radius:18px;background:linear-gradient(135deg,#123f35,#17634e);color:#fff;box-shadow:0 8px 22px #123b321c}
+ .operator-launcher-head .eyebrow{color:#d6f06d;margin:0 0 7px}
+ .operator-launcher-head h2{margin:0;color:#fff;font-size:24px}
+ .operator-launcher-head p:last-child{margin:8px 0 0;color:#e5efe9}
+ .operator-action-group{margin:0 0 14px;padding:16px;border:1px solid #e3e9e5;border-radius:18px;background:#fff;box-shadow:0 4px 16px #15251b0a}
+ .operator-action-group[hidden],.operator-action[hidden]{display:none!important}
+ .operator-action-group h3{margin:0 0 12px;color:#52625a;font-size:12px;letter-spacing:.1em}
+ .operator-action-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ .operator-action{display:flex;min-width:0;min-height:156px;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:14px 10px;border:1px solid #e3e9e5;border-radius:15px;background:#fbfcfb;color:#18392f;text-align:center;white-space:normal}
+ .operator-action:hover{border-color:#8aaa9c;background:#f3f8f4}
+ .operator-action-icon{display:grid;width:68px;height:68px;place-items:center;border:1px solid #b8c8bf;border-radius:14px;background:#fff;color:#17634e}
+ .operator-action-icon svg{width:48px;height:48px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+ .operator-action strong{font-size:15px;line-height:1.2}
+ .operator-action small{max-width:180px;color:#68776f;font-size:12px;line-height:1.3}
+}
+@media(max-width:380px){.operator-action-group{padding:12px}.operator-action-grid{gap:8px}.operator-action{min-height:142px;padding:10px 6px}.operator-action-icon{width:58px;height:58px}.operator-action-icon svg{width:42px;height:42px}}@media(max-width:900px){
+ .operator-stock-results{display:grid;gap:10px}
+ .operator-stock-result{display:grid;gap:12px;margin:0;padding:14px}
+ .operator-stock-controls{display:grid;gap:8px}
+ .operator-stock-edit{display:grid;grid-template-columns:42px minmax(52px,1fr) 42px minmax(90px,auto);gap:6px;align-items:center}
+ .operator-stock-edit input{min-width:0;min-height:42px;margin:0;text-align:center}
+ .operator-stock-edit button{min-height:42px;padding:8px}
+}

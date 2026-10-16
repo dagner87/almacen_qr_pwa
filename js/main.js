@@ -8,6 +8,22 @@ $('palletLocationInput').oninput = () => resolveLocationInput();
 $('palletLocationInput').onchange = () => resolveLocationInput(true);
 $('palletLocationInput').onblur = () => resolveLocationInput(true);
 $('rotationRange').onchange = renderRotation;
+document.querySelectorAll('[data-operator-action]').forEach((button) => {
+  button.addEventListener('click', () => {
+    const action = button.dataset.operatorAction;
+    if (action === 'new-pallet') {
+      showView('pallets');
+      showPalletDialog();
+    } else if (action === 'place-pallet') showView('scan');
+    else if (action === 'search') {
+      showView('search');
+      $('productLookupInput').focus();
+    } else if (action === 'locations') {
+      showView('locations');
+      $('locationSearch').focus();
+    }
+  });
+});
 $('palletProductRows').addEventListener('change', (event) => {
   const input = event.target;
   if (!input.matches('.product-code')) return;
@@ -48,6 +64,16 @@ $('palletProductRows').addEventListener('click', (event) => {
 });
 
 async function init() {
+  const menuToggle = $('menuToggle'),
+    mainTabs = $('mainTabs');
+  menuToggle?.addEventListener('click', () => toggleMobileMenu());
+  document.addEventListener('click', (event) => {
+    if (mainTabs?.classList.contains('open') && !mainTabs.contains(event.target) && !menuToggle?.contains(event.target))
+      toggleMobileMenu(false);
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') toggleMobileMenu(false);
+  });
   db = await openDb();
   await loadState();
   await refreshCatalog();
@@ -178,7 +204,22 @@ bindCatalog();
   document.body.addEventListener('click', async (event) => {
     const button = event.target.closest('button');
     if (!button) return;
-    if (button.dataset.close) {
+          if (button.dataset.stockSave) {
+        const input = document.querySelector(`[data-stock-value="${CSS.escape(button.dataset.stockSave + '|' + button.dataset.stockCode)}"]`);
+        if (input) await updateOperatorProductQuantity(button.dataset.stockSave, button.dataset.stockCode, input.value);
+        return;
+      }
+      if (button.dataset.stockDelta) {
+        const selector = `[data-stock-value="${CSS.escape(button.dataset.stockPallet + '|' + button.dataset.stockCode)}"]`,
+          input = document.querySelector(selector);
+        if (input) {
+          const next = Number(input.value) + Number(button.dataset.stockDelta);
+          if (next < 0) return;
+          await updateOperatorProductQuantity(button.dataset.stockPallet, button.dataset.stockCode, next);
+        }
+        return;
+      }
+      if (button.dataset.close) {
       $(button.dataset.close).close();
       return;
     }

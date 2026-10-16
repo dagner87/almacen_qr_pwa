@@ -157,6 +157,10 @@ function updateConnectivity() {
   const ready = AUTH_DISABLED || Boolean(currentUser && currentProfile && navigator.onLine && realtimeReady);
   $('syncBadge').textContent = AUTH_DISABLED ? 'Modo local' : ready ? 'En tiempo real' : 'Solo consulta';
   $('signOutBtn').hidden = AUTH_DISABLED || !currentUser;
+  $('menuToggle').hidden = !AUTH_DISABLED && !currentUser;
+const operatorDeviceHome = currentProfile?.role === 'operator' && window.matchMedia('(max-width: 900px)').matches;
+  document.body.classList.toggle('operator-device-home', operatorDeviceHome);
+  if (!AUTH_DISABLED && !currentUser) toggleMobileMenu(false);
   $('signedInAs').textContent = AUTH_DISABLED
     ? ''
     : currentProfile
@@ -169,8 +173,13 @@ function updateConnectivity() {
     element.hidden = !canAccessModule(element.dataset.module);
   });
   if ($('dashboardMoves')) $('dashboardMoves').hidden = !canAccessModule('moves');
+const dashboardTab = document.querySelector('.tab[data-view="dashboard"]');
+  if (dashboardTab) dashboardTab.hidden = !canAccessModule('dashboard') && !operatorDeviceHome;
+  document.querySelectorAll('.operator-action-group').forEach((group) => {
+    group.hidden = !group.querySelector('.operator-action:not([hidden])');
+  });
   const activeView = document.querySelector('.view.active')?.id;
-  if (activeView && !ADMIN_VIEWS.includes(activeView) && !canAccessModule(activeView)) {
+  if (activeView && !ADMIN_VIEWS.includes(activeView) && !canAccessModule(activeView) && !(activeView === 'dashboard' && operatorDeviceHome)) {
     const firstAllowed = MODULES.map(([key]) => key).find(canAccessModule);
     if (firstAllowed) showView(firstAllowed);
   }

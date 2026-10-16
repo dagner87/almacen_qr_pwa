@@ -111,27 +111,9 @@ async function savePallet(event) {
   const id = $('palletId').value,
     old = state.pallets.find((item) => item.id === id),
     selectedLocation = resolveLocationInput(true);
-  let locationId = selectedLocation?.id || '';
-  if (!locationId) {
-    let temporaryLocation = state.locations.find((location) => String(location.code).trim().toLocaleLowerCase() === 'pasillo');
-    if (!temporaryLocation) {
-      temporaryLocation = { id: 'PASILLO', code: 'Pasillo', rackId: 'PASILLO', level: 0, position: 0, capacity: 0, createdAt: now() };
-      try {
-        if (!AUTH_DISABLED) {
-          const { error } = await supabaseClient.from('locations').upsert(temporaryLocation);
-          if (error) throw error;
-        }
-        await put('locations', temporaryLocation);
-        state.locations.push(temporaryLocation);
-      } catch (error) {
-        toast('No se pudo preparar la ubicaciÃ³n temporal Pasillo: ' + error.message);
-        return;
-      }
-    }
-    locationId = temporaryLocation.id;
-  }
-  if (!state.locations.some((location) => location.id === locationId)) {
-    toast('La ubicaciÃ³n ya no existe. Actualiza el inventario e intÃ©ntalo nuevamente.');
+  const locationId = selectedLocation?.id || old?.locationId || null;
+  if (locationId && !state.locations.some((location) => location.id === locationId)) {
+    toast('La ubicación ya no existe. Actualiza el inventario e inténtalo nuevamente.');
     return;
   }
   const result = readPalletProducts();
