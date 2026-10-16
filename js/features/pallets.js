@@ -366,17 +366,37 @@ async function movePallet(id) {
   if (!canWrite()) return;
   const pallet = state.pallets.find((item) => item.id === id);
   if (!pallet) return;
-  const options = state.locations
-      .map((location) => `${location.code} (${activePalletsAt(location.id).length} pallet(s))`)
-      .join('\n'),
-    code = prompt('Escribe el código de destino exacto:\n' + options, locLabel(pallet.locationId));
-  if (!code) return;
-  const destination = state.locations.find((location) => location.code.toLowerCase() === code.trim().toLowerCase());
-  if (!destination) {
-    toast('No se encontró ese código de ubicación.');
+  $('movePalletId').value = pallet.id;
+  $('moveLocationId').value = '';
+  $('moveLocationInput').value = '';
+  renderMoveLocationMatches();
+  $('movePalletDialog').showModal();
+  $('moveLocationInput').focus();
+}
+
+function renderMoveLocationMatches() {
+  const query = $('moveLocationInput').value.trim().toLocaleLowerCase(),
+    allMatches = sortedLocations().filter((location) => !query || location.code.toLocaleLowerCase().includes(query)),
+    matches = allMatches.slice(0, 40);
+  $('moveLocationResults').innerHTML = matches.length
+    ? matches.map((location) => `<button type="button" class="move-location-option" role="option" data-select-move-location="${escapeHtml(location.id)}"><strong>${escapeHtml(location.code)}</strong><span>${activePalletsAt(location.id).length} pallet(s)</span></button>`).join('')
+    : '<p class="muted small">No hay posiciones que coincidan.</p>';
+  $('moveLocationHint').textContent = allMatches.length > 40 ? 'Mostrando las primeras 40 coincidencias; escribe más para precisar.' : `${allMatches.length} posición(es) mostradas. Escribe para filtrar.`;
+}
+
+async function saveMovePallet(event) {
+  event.preventDefault();
+  if (!canWrite()) return;
+  const pallet = state.pallets.find((item) => item.id === $('movePalletId').value),
+    locationId = $('moveLocationId').value,
+    destination = state.locations.find((item) => item.id === locationId);
+  if (!pallet || !destination) {
+    toast('Busca y selecciona una posición de destino de la lista.');
+    $('moveLocationInput').focus();
     return;
   }
-  await savePalletLocation(pallet, destination);
+  const saved = await savePalletLocation(pallet, destination);
+  if (saved) $('movePalletDialog').close();
 }
 
 async function deletePallet(id) {

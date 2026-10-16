@@ -6,6 +6,20 @@ $('printBarcodes').onclick = printBarcodes;
 $('addPalletProduct').onclick = () => addProductRow();
 $('externalProductCodes').onchange = setExternalProductMode;
 $('palletBulkCodes').oninput = updateReturnBoxCount;
+$('moveLocationInput').oninput = () => {
+  $('moveLocationId').value = '';
+  renderMoveLocationMatches();
+};
+$('moveLocationResults').addEventListener('click', (event) => {
+  const option = event.target.closest('[data-select-move-location]');
+  if (!option) return;
+  const location = state.locations.find((item) => item.id === option.dataset.selectMoveLocation);
+  if (!location) return;
+  $('moveLocationId').value = location.id;
+  $('moveLocationInput').value = location.code;
+  $('moveLocationHint').textContent = `Destino seleccionado: ${location.code}`;
+});
+$('movePalletForm').onsubmit = saveMovePallet;
 
 $('palletLocationInput').oninput = () => resolveLocationInput();
 $('palletLocationInput').onchange = () => resolveLocationInput(true);

@@ -116,12 +116,21 @@ function openQr(code, title, qrValue = code, extraHtml = '') {
   currentQr = { code, title };
   $('qrTitle').textContent = title;
   $('qrContent').innerHTML =
-    `<div id="qrImage"></div><strong>${escapeHtml(code)}</strong><p class="muted small">${escapeHtml(title)}</p>${extraHtml}`;
-  // Más contenido = más módulos: se agranda el QR para que siga siendo legible.
+    `<div id="qrImage" class="qr-generating">Generando QR…</div><strong>${escapeHtml(code)}</strong><p class="muted small">${escapeHtml(title)}</p>${extraHtml}`;
   const bytes = new TextEncoder().encode(qrValue).length,
     size = bytes > 700 ? 320 : bytes > 350 ? 260 : 190;
-  qrRender($('qrContent').querySelector('#qrImage'), qrValue, size);
   $('qrDialog').showModal();
+  requestAnimationFrame(() => {
+    const container = $('qrContent').querySelector('#qrImage');
+    if (!container) return;
+    try {
+      qrRender(container, qrValue, size);
+      container.classList.remove('qr-generating');
+    } catch (error) {
+      container.textContent = 'No se pudo generar el QR. Vuelve a intentarlo.';
+      toast('No se pudo generar el código QR.');
+    }
+  });
 }
 
 function openPalletQr(p) {
@@ -131,11 +140,7 @@ function openPalletQr(p) {
       type: 'pallet',
       code: p.code,
       locationCode: locLabel(p.locationId),
-      products: products.map((item) => ({
-        productCode: String(item.productCode || ''),
-        quantity: Number(item.quantity || 0),
-        ...(item.externalCode ? { returnStore: String(item.returnStore || '') } : {}),
-      })),
+      ...(isReturn ? { returnCodes: products.map((item) => String(item.productCode || '')) } : {}),
     },
     rows = products
       .map(
