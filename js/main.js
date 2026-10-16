@@ -13,7 +13,7 @@ document.querySelectorAll('[data-operator-action]').forEach((button) => {
     const action = button.dataset.operatorAction;
     if (action === 'new-pallet') {
       showView('pallets');
-      showPalletDialog();
+      $('addPalletBtn').click();
     } else if (action === 'place-pallet') showView('scan');
     else if (action === 'search') {
       showView('search');
@@ -64,7 +64,7 @@ $('palletProductRows').addEventListener('click', (event) => {
 });
 
 async function init() {
-  setAppLoading(true, AUTH_DISABLED ? 'Preparando el inventario...' : 'Verificando sesión...');
+  setAppLoading(true, AUTH_DISABLED ? 'Preparando el inventario...' : 'Verificando sesiï¿½n...');
   const menuToggle = $('menuToggle'),
     mainTabs = $('mainTabs');
   menuToggle?.addEventListener('click', () => toggleMobileMenu());
