@@ -21,6 +21,25 @@
 .return-status.inactive{background:#edf0ed;color:#66736c}
 .return-code-list{display:flex;flex-wrap:wrap;gap:5px}
 .return-code-list code{padding:4px 7px;border:1px solid var(--line);border-radius:6px;background:#f8faf8;color:#33443a;font-size:11px;overflow-wrap:anywhere}
+.qr-return-code-head h2{margin:0;color:var(--green);font-size:22pt}
+.qr-return-code-head p:last-child{margin:5px 0 12px;color:#333;font-size:11pt}
+.qr-return-code-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.qr-return-code-item{display:grid;grid-template-columns:24px minmax(0,1fr);align-items:center;gap:5px;padding:8px;border-bottom:1px solid var(--line)}
+.qr-return-code-item span{color:var(--muted);font-size:11px}
+.qr-return-code-item code{color:var(--ink);font-size:14px;font-weight:800;overflow-wrap:anywhere}
+.qr-return-code-item small{grid-column:2;color:var(--muted);font-size:10px}
+@media print{
+  @page{size:A4 portrait;margin:8mm}
+  #qrDialog[open] #qrContent.qr-has-return-sheet{display:block!important;padding:0!important}
+  #qrContent.qr-has-return-sheet .qr-main-print-page{display:flex!important;min-height:278mm;flex-direction:column!important;align-items:center!important;justify-content:center!important;break-after:page!important;page-break-after:always!important;break-inside:avoid!important}
+  #qrContent.qr-has-return-sheet .qr-return-code-sheet{display:flex!important;height:278mm;min-height:278mm;flex-direction:column!important;break-before:page!important;page-break-before:always!important;break-inside:avoid!important}
+  #qrContent.qr-has-return-sheet .qr-return-code-head{display:block!important;flex:0 0 auto;padding:0 0 7mm;border-bottom:1px solid #777}
+  #qrContent.qr-has-return-sheet .qr-return-code-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-auto-rows:minmax(0,1fr);flex:1;gap:0 8mm;align-content:stretch}
+  #qrContent.qr-has-return-sheet .qr-return-code-item{display:grid!important;grid-template-columns:9mm minmax(0,1fr)!important;align-content:center;border-bottom:0.3mm solid #aaa;padding:2mm 1mm}
+  #qrContent.qr-has-return-sheet .qr-return-code-item span{font-size:9pt;color:#555}
+  #qrContent.qr-has-return-sheet .qr-return-code-item code{font-size:13pt;color:#000}
+  #qrContent.qr-has-return-sheet .qr-return-code-item small{font-size:8pt;color:#333}
+}
 @media(max-width:620px){
   .return-metrics{gap:7px}
   .return-metric{min-height:78px;padding:11px}

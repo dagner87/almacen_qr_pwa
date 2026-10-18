@@ -112,11 +112,16 @@ function qrRender(container, code, size = 190) {
   });
 }
 
-function openQr(code, title, qrValue = code, extraHtml = '') {
+function openQr(code, title, qrValue = code, extraHtml = '', printPagesHtml = '') {
   currentQr = { code, title };
   $('qrTitle').textContent = title;
-  $('qrContent').innerHTML =
-    `<div id="qrImage" class="qr-generating">Generando QR…</div><strong>${escapeHtml(code)}</strong><p class="muted small">${escapeHtml(title)}</p>${extraHtml}`;
+  const qrContent = $('qrContent'),
+    qrMarkup = `<div id="qrImage" class="qr-generating">Generando QR…</div><strong>${escapeHtml(code)}</strong><p class="muted small">${escapeHtml(title)}</p>${extraHtml}`;
+  qrContent.classList.toggle('qr-has-return-sheet', Boolean(printPagesHtml));
+  qrContent.innerHTML = printPagesHtml
+    ? `<section class="qr-main-print-page">${qrMarkup}</section>${printPagesHtml}`
+    : qrMarkup;
+  $('printQr').textContent = printPagesHtml ? 'Imprimir QR + lista (2 páginas)' : 'Imprimir etiqueta';
   const bytes = new TextEncoder().encode(qrValue).length,
     size = bytes > 700 ? 320 : bytes > 350 ? 260 : 190;
   $('qrDialog').showModal();
@@ -136,6 +141,8 @@ function openQr(code, title, qrValue = code, extraHtml = '') {
 function openPalletQr(p) {
   const products = palletProducts(p),
     isReturn = products.length > 0 && products.every((item) => item.externalCode),
+    returnStores = [...new Set(products.map((item) => String(item.returnStore || '').trim()).filter(Boolean))],
+    returnStoreLabel = returnStores.length === 1 ? returnStores[0] : returnStores.length ? 'Varias tiendas' : 'Tienda sin indicar',
     payload = {
       type: 'pallet',
       code: p.code,
@@ -151,9 +158,14 @@ function openPalletQr(p) {
       )
       .join(''),
     detail = `<p class="small qr-screen-only"><b>Ubicación:</b> ${escapeHtml(locLabel(p.locationId))} · <b>Total:</b> ${palletQuantity(p)} ${palletQuantityLabel(p)}</p><p class="qr-print-total">${isReturn ? `${products.length} cajas de retorno` : `${palletQuantity(p)} ${palletQuantityLabel(p)}`}</p>${
-      rows
-        ? `<table class="rotation-table qr-products ${isReturn ? 'qr-return-list' : 'qr-screen-only'}"><thead><tr>${isReturn ? '<th>Código de caja</th><th>Tienda</th>' : '<th>Código</th><th>Detalle</th><th>Cant.</th>'}</tr></thead><tbody>${rows}</tbody></table>`
+      rows && !isReturn
+        ? `<table class="rotation-table qr-products qr-screen-only"><thead><tr><th>Código</th><th>Detalle</th><th>Cant.</th></tr></thead><tbody>${rows}</tbody></table>`
         : ''
-    }`;
-  openQr(p.code, 'Etiqueta del pallet', `ALMACEN_PALLET:${JSON.stringify(payload)}`, detail);
+    }`,
+    returnCodeSheet = isReturn
+      ? `<section class="qr-return-code-sheet"><header class="qr-return-code-head"><p class="eyebrow">DEVOLUCIONES</p><h2>Lista de códigos</h2><p><b>Pallet:</b> ${escapeHtml(p.code)} · <b>Tienda:</b> ${escapeHtml(returnStoreLabel)} · <b>Cajas:</b> ${products.length}</p></header><div class="qr-return-code-grid">${products
+          .map((item, index) => `<article class="qr-return-code-item"><span>${index + 1}</span><code>${escapeHtml(item.productCode || '')}</code><small>${escapeHtml(item.returnStore || 'Tienda sin indicar')}</small></article>`)
+          .join('')}</div></section>`
+      : '';
+  openQr(p.code, 'Etiqueta del pallet', `ALMACEN_PALLET:${JSON.stringify(payload)}`, detail, returnCodeSheet);
 }
