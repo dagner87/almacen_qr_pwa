@@ -106,3 +106,4 @@ PWA en español para administrar inventario de almacén, ubicaciones de racks, p
 - v56 Configuración: mínimos/máximos por producto (stock_limits), alertas por correo (lert_config, stock_alert_state), panel "Stock bajo" en el dashboard. Código: js/features/stock-limits.js, stock.css, Edge Function supabase/functions/stock-alerts (Resend). Migración 20261014_004.
 - Despliegue de la alerta: ejecutar la migración 004; supabase functions deploy stock-alerts; secrets RESEND_API_KEY (y opcional ALERT_FROM).
 - v99 Devoluciones: nueva vista agrupada por tienda con búsqueda por tienda, código de caja, pallet y ubicación; filtros de estado, totales de cajas/pallets activos y accesos para editar o abrir el QR. Reutiliza el permiso `pallets`; interfaz en `js/features/returns.js` y `returns.css`.
+- v100 Dashboard del operador: acceso con icono a Devoluciones, después de Crear pallet, Escanear y Buscar; conserva el permiso de `pallets`.
