@@ -153,10 +153,10 @@ function showPalletDialog(p = null, presetLocationId = '') {
 
 async function savePallet(event) {
   event.preventDefault();
-  if (!canWrite()) return;
   const id = $('palletId').value,
     old = state.pallets.find((item) => item.id === id),
     selectedLocation = resolveLocationInput(true);
+  if (id ? !canWrite() : !canWritePalletCreation()) return;
   const locationId = selectedLocation?.id || old?.locationId || null;
   if (locationId && !state.locations.some((location) => location.id === locationId)) {
     toast('La ubicación ya no existe. Actualiza el inventario e inténtalo nuevamente.');
@@ -200,6 +200,7 @@ async function savePallet(event) {
       }
       continue;
     }
+    if (!canAccessModule('pallets')) continue;
     const matches = findActiveProductMatches(product.productCode, old?.id);
     if (!matches.length) continue;
     const groups = new Map();

@@ -108,6 +108,19 @@ as $$
   );
 $$;
 
+create or replace function public.can_create_pallet()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles
+    where user_id = auth.uid() and role in ('admin', 'operator')
+  );
+$$;
+
 create or replace function public.add_auth_profile()
 returns trigger
 language plpgsql
@@ -376,7 +389,7 @@ for all to authenticated using (public.is_admin()) with check (public.is_admin()
 create policy "authenticated can read pallets" on public.pallets
 for select to authenticated using (public.has_module_access('dashboard') or public.has_module_access('search') or public.has_module_access('pallets') or public.has_module_access('scan'));
 create policy "authenticated can write pallets" on public.pallets
-for insert to authenticated with check (public.has_module_access('pallets'));
+for insert to authenticated with check (public.has_module_access('pallets') or public.can_create_pallet());
 create policy "authenticated can update pallets" on public.pallets
 for update to authenticated using (public.has_module_access('pallets')) with check (public.has_module_access('pallets'));
 create policy "admins can delete pallets" on public.pallets
@@ -392,6 +405,7 @@ for update to authenticated using (public.is_admin()) with check (public.is_admi
 
 grant execute on function public.is_admin() to authenticated;
 grant execute on function public.has_module_access(text) to authenticated;
+grant execute on function public.can_create_pallet() to authenticated;
 
 do $$
 declare

@@ -5,6 +5,10 @@ function canAccessModule(module) {
   return currentProfile?.permissions?.[permission] === true;
 }
 
+function canCreatePallet() {
+  return AUTH_DISABLED || currentProfile?.role === 'admin' || currentProfile?.role === 'operator';
+}
+
 function defaultPermissionsFor(role) {
   return role === 'admin'
     ? Object.fromEntries(MODULES.map(([key]) => [key, true]))
@@ -23,6 +27,23 @@ function canWrite(adminOnly = false) {
   }
   if (!adminOnly && !canAccessModule('pallets')) {
     toast('No tienes permiso para modificar pallets.');
+    return false;
+  }
+  if (!navigator.onLine || !realtimeReady) {
+    toast('Sin conexión en tiempo real: el sistema está en modo de solo consulta.');
+    return false;
+  }
+  return true;
+}
+
+function canWritePalletCreation() {
+  if (canAccessModule('pallets')) return canWrite();
+  if (!currentUser || !currentProfile) {
+    toast('Inicia sesión para realizar cambios.');
+    return false;
+  }
+  if (!canCreatePallet()) {
+    toast('No tienes permiso para crear pallets.');
     return false;
   }
   if (!navigator.onLine || !realtimeReady) {
