@@ -1,0 +1,35 @@
+.return-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0}
+.return-metric{display:flex;min-height:92px;flex-direction:column;justify-content:center;gap:5px;padding:15px 17px;border:1px solid var(--line);border-radius:13px;background:#fff}
+.return-metric span{color:var(--muted);font-size:12px}
+.return-metric strong{color:var(--green);font-size:27px;line-height:1.1}
+.returns-filters select{max-width:none}
+.returns-list{display:flex;flex-direction:column;gap:14px}
+.return-store-card{overflow:hidden;border:1px solid var(--line);border-radius:14px;background:#fff}
+.return-store-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:15px 17px;background:#eef4df;border-bottom:1px solid var(--line)}
+.return-store-head .eyebrow{margin:0 0 3px;color:var(--green2)}
+.return-store-head h3{margin:0;color:var(--green);font-size:18px}
+.return-store-total{color:var(--green2);font-size:12px;font-weight:700;text-align:right}
+.return-store-rows{display:flex;flex-direction:column}
+.return-pallet-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:14px;padding:15px 17px}
+.return-pallet-row+.return-pallet-row{border-top:1px solid var(--line)}
+.return-pallet-info{min-width:0}
+.return-pallet-title{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.return-pallet-title strong{color:var(--ink);font-size:14px}
+.return-pallet-info p{margin:3px 0 9px;color:var(--muted);font-size:12px}
+.return-status{display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:750}
+.return-status.active{background:#e8f3ed;color:#1b654b}
+.return-status.inactive{background:#edf0ed;color:#66736c}
+.return-code-list{display:flex;flex-wrap:wrap;gap:5px}
+.return-code-list code{padding:4px 7px;border:1px solid var(--line);border-radius:6px;background:#f8faf8;color:#33443a;font-size:11px;overflow-wrap:anywhere}
+@media(max-width:620px){
+  .return-metrics{gap:7px}
+  .return-metric{min-height:78px;padding:11px}
+  .return-metric span{font-size:11px}
+  .return-metric strong{font-size:23px}
+  .returns-filters{flex-direction:column}
+  .returns-filters select{max-width:none}
+  .return-store-head{align-items:flex-start;flex-direction:column;gap:5px;padding:13px}
+  .return-store-total{text-align:left}
+  .return-pallet-row{grid-template-columns:minmax(0,1fr);gap:11px;padding:13px}
+  .return-pallet-row .item-actions{width:100%}
+}

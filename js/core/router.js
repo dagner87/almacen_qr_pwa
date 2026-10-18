@@ -26,6 +26,7 @@ function showView(view) {
   if (view === 'scan') $('manualCode').focus();
   if (view === 'admin') renderAdminTools();
   if (view === 'inventory') renderInventory();
+  if (view === 'returns') renderReturns();
 }
 
 function renderAll() {
@@ -36,6 +37,7 @@ function renderAll() {
   renderRecent();
   renderLowStock();
   renderMoves();
+  renderReturns();
   renderProductLookup();
   if ($('inventory')?.classList.contains('active') && !inventoryPending.size) renderInventory();
   if (currentProfile?.role === 'admin' && $('admin').classList.contains('active')) renderAdminTools(false);

@@ -1,7 +1,8 @@
 /* Reglas de acceso por módulo y rol. */
 function canAccessModule(module) {
   if (AUTH_DISABLED || currentProfile?.role === 'admin') return true;
-  return currentProfile?.permissions?.[module] === true;
+  const permission = module === 'returns' ? 'pallets' : module;
+  return currentProfile?.permissions?.[permission] === true;
 }
 
 function defaultPermissionsFor(role) {
