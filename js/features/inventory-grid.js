@@ -1,7 +1,7 @@
 /* Pantalla Inventario: cuadrÃ­cula editable de existencias (solo administrador). */
 const inventoryPending = new Map();
 const INVENTORY_PAGE_SIZE = 50;
-let inventoryPage = 1;
+let inventoryDataTable = null;
 const STOCK_ACTIONS = ['Entrada de stock', 'Salida de stock', 'Ajuste de stock', 'ActualizaciÃ³n de stock'];
 
 function inventoryKey(pallet, item) {
@@ -15,10 +15,8 @@ function inventoryRows() {
     for (const item of palletProducts(pallet))
       rows.push({ pallet, item, key: inventoryKey(pallet, item), loc: locLabel(pallet.locationId) });
   }
-  const collator = (a, b) => String(a).localeCompare(String(b), undefined, { numeric: true });
-  return rows.sort((a, b) => collator(a.loc, b.loc) || collator(a.item.productCode, b.item.productCode));
+  return rows;
 }
-
 function normalizeInventoryFilter(value) {
   return String(value || '')
     .normalize('NFD')
@@ -35,43 +33,76 @@ function visibleInventoryRows() {
   );
 }
 
-function renderInventoryPagination(total, start, end) {
-  const target = $('inventoryPagination');
-  if (!target) return;
-  const pages = Math.max(1, Math.ceil(total / INVENTORY_PAGE_SIZE));
-  target.hidden = total <= INVENTORY_PAGE_SIZE;
-  target.innerHTML = target.hidden
-    ? ''
-    : `<button class="secondary" type="button" data-inventory-page="${inventoryPage - 1}" ${inventoryPage <= 1 ? 'disabled' : ''}>Anterior</button><span>Página ${inventoryPage} de ${pages} · ${start + 1}–${end} de ${total}</span><button class="secondary" type="button" data-inventory-page="${inventoryPage + 1}" ${inventoryPage >= pages ? 'disabled' : ''}>Siguiente</button>`;
-}
-
 function renderInventory() {
   const target = $('inventoryGrid');
   if (!target) return;
-  const rows = visibleInventoryRows(),
-    pages = Math.max(1, Math.ceil(rows.length / INVENTORY_PAGE_SIZE));
-  inventoryPage = Math.min(Math.max(1, inventoryPage), pages);
-  const start = (inventoryPage - 1) * INVENTORY_PAGE_SIZE,
-    pageRows = rows.slice(start, start + INVENTORY_PAGE_SIZE);
+  const previousOrder = inventoryDataTable?.order(),
+    previousPage = inventoryDataTable?.page() || 0;
+  if (inventoryDataTable) {
+    inventoryDataTable.destroy();
+    inventoryDataTable = null;
+  }
+  const rows = window.DataTable ? inventoryRows() : visibleInventoryRows();
   if (!rows.length) {
     target.innerHTML = '<div class="empty">No hay existencias que coincidan con el filtro.</div>';
-    renderInventoryPagination(0, 0, 0);
     updateInventorySummary();
     renderStockMoves();
     return;
   }
-  target.innerHTML = `<table class="inventory-grid"><thead><tr><th class="c-loc">Ubicaci\u00f3n</th><th class="c-pallet">Pallet</th><th class="c-code">C\u00f3digo</th><th class="c-desc">Descripci\u00f3n</th><th class="num c-stock">Stock</th><th class="num in">+ Entrada</th><th class="num out">\u2212 Salida</th><th class="num">Nuevo stock</th></tr></thead><tbody>${pageRows
+  target.innerHTML = `<table id="inventoryTable" class="inventory-grid"><thead><tr><th class="c-loc">Ubicaci\u00f3n</th><th class="c-pallet">Pallet</th><th class="c-code">C\u00f3digo</th><th class="c-desc">Descripci\u00f3n</th><th class="num c-stock">Stock</th><th class="num in">+ Entrada</th><th class="num out">\u2212 Salida</th><th class="num">Nuevo stock</th><th>Orden interno</th></tr></thead><tbody>${rows
     .map(({ pallet, item, key, loc }) => {
       const current = Number(item.quantity || 0),
         pending = inventoryPending.get(key),
-        entry = pending?.in || '',
-        exit = pending?.out || '',
-        next = current + Number(entry || 0) - Number(exit || 0);
-      return `<tr data-key="${escapeHtml(key)}" data-current="${current}" data-pallet="${escapeHtml(pallet.id)}" data-code="${escapeHtml(String(item.productCode || ''))}"><td class="c-loc">${escapeHtml(loc)}</td><td class="c-pallet">${escapeHtml(pallet.code)}</td><td class="c-code"><strong>${escapeHtml(item.productCode)}</strong></td><td class="desc c-desc">${escapeHtml(productDescription(item))}</td><td class="num c-stock">${current.toLocaleString()}</td><td class="cell"><input type="number" min="0" step="1" inputmode="numeric" data-f="in" value="${entry}" aria-label="Entrada"></td><td class="cell"><input type="number" min="0" step="1" inputmode="numeric" data-f="out" value="${exit}" aria-label="Salida"></td><td class="cell"><input type="number" min="0" step="1" inputmode="numeric" data-f="new" value="${next}" aria-label="Nuevo stock"></td></tr>`;
+        entry = Number(pending?.in || 0),
+        exit = Number(pending?.out || 0),
+        next = current + entry - exit;
+      return `<tr data-key="${escapeHtml(key)}" data-current="${current}" data-pallet="${escapeHtml(pallet.id)}" data-code="${escapeHtml(String(item.productCode || ''))}"><td class="c-loc">${escapeHtml(loc)}</td><td class="c-pallet">${escapeHtml(pallet.code)}</td><td class="c-code"><strong>${escapeHtml(item.productCode)}</strong></td><td class="desc c-desc">${escapeHtml(productDescription(item))}</td><td class="num c-stock" data-order="${current}">${current.toLocaleString()}</td><td class="cell" data-order="${entry}"><input type="number" min="0" step="1" inputmode="numeric" data-f="in" value="${pending?.in || ''}" aria-label="Entrada"></td><td class="cell" data-order="${exit}"><input type="number" min="0" step="1" inputmode="numeric" data-f="out" value="${pending?.out || ''}" aria-label="Salida"></td><td class="cell" data-order="${next}"><input type="number" min="0" step="1" inputmode="numeric" data-f="new" value="${next}" aria-label="Nuevo stock"></td><td>${escapeHtml(key)}</td></tr>`;
     })
     .join('')}</tbody></table>`;
   target.querySelectorAll('tr[data-key]').forEach(markInventoryRow);
-  renderInventoryPagination(rows.length, start, Math.min(start + pageRows.length, rows.length));
+  if (window.DataTable) {
+    inventoryDataTable = new DataTable('#inventoryTable', {
+      pageLength: INVENTORY_PAGE_SIZE,
+      lengthChange: false,
+      searching: true,
+      autoWidth: false,
+      orderMulti: true ,
+      order: previousOrder?.length ? previousOrder : [[0, 'asc']],
+      orderFixed: { post: [[8, 'asc']] },
+      columnDefs: [
+        { targets: [0, 1, 2, 3, 4, 5, 6, 7], orderable: true, orderSequence: ['asc', 'desc'] },
+        { targets: [4, 5, 6, 7], type: 'num' },
+        { targets: 8, visible: false, searchable: false },
+      ],
+      layout: { topStart: null, topEnd: null, bottomStart: 'info', bottomEnd: 'paging' },
+      language: {
+        emptyTable: 'No hay existencias.',
+        info: 'Mostrando _START_ a _END_ de _TOTAL_ l\u00edneas',
+        infoEmpty: 'Mostrando 0 l\u00edneas',
+        infoFiltered: '(filtrado de _MAX_ l\u00edneas en total)',
+        loadingRecords: 'Cargando...',
+        processing: 'Procesando...',
+        search: 'Buscar:',
+        zeroRecords: 'No hay existencias que coincidan con el filtro.',
+        paginate: { first: 'Primera', last: '\u00daltima', next: 'Siguiente', previous: 'Anterior' },
+        aria: { orderable: 'Ordenar por esta columna', orderableReverse: 'Invertir el orden de esta columna' },
+      },
+      drawCallback: () => {
+        target.querySelectorAll('tr[data-key]').forEach(markInventoryRow);
+        updateInventorySummary();
+      },
+    });
+    inventoryDataTable.search.fixed('inventory-code-description', (_search, _data, index) => {
+      const query = normalizeInventoryFilter(($('inventorySearch')?.value || '').trim());
+      if (!query) return true;
+      const row = inventoryDataTable.row(index).node();
+      return [row?.cells[2]?.textContent, row?.cells[3]?.textContent]
+        .some((value) => normalizeInventoryFilter(value).includes(query));
+    });
+    inventoryDataTable.draw();
+    const pageCount = inventoryDataTable.page.info().pages;
+    if (pageCount) inventoryDataTable.page(Math.min(previousPage, pageCount - 1)).draw('page');
+  }
   updateInventorySummary();
   renderStockMoves();
 }
@@ -116,6 +147,10 @@ function onInventoryInput(event) {
   if (entry || exit)
     inventoryPending.set(tr.dataset.key, { palletId: tr.dataset.pallet, code: tr.dataset.code, in: entry, out: exit });
   else inventoryPending.delete(tr.dataset.key);
+  tr.cells[5].dataset.order = String(entry);
+  tr.cells[6].dataset.order = String(exit);
+  tr.cells[7].dataset.order = String(inventoryRowValues(tr).next);
+  inventoryDataTable?.row(tr).invalidate('dom');
   markInventoryRow(tr);
   updateInventorySummary();
 }
@@ -134,11 +169,12 @@ function onInventoryKeydown(event) {
     next.select();
     return;
   }
-  const pages = Math.max(1, Math.ceil(visibleInventoryRows().length / INVENTORY_PAGE_SIZE));
-  if (goingUp && inventoryPage > 1) inventoryPage--;
-  else if (!goingUp && inventoryPage < pages) inventoryPage++;
+  if (!inventoryDataTable) return;
+  const currentPage = inventoryDataTable.page(),
+    pageCount = inventoryDataTable.page.info().pages;
+  if (goingUp && currentPage > 0) inventoryDataTable.page(currentPage - 1).draw('page');
+  else if (!goingUp && currentPage < pageCount - 1) inventoryDataTable.page(currentPage + 1).draw('page');
   else return;
-  renderInventory();
   const pageInputs = [...$('inventoryGrid').querySelectorAll(`input[data-f="${field}"]`)],
     destination = goingUp ? pageInputs[pageInputs.length - 1] : pageInputs[0];
   destination?.focus();
@@ -366,16 +402,10 @@ function bindInventoryGrid() {
   });
   grid.addEventListener('focusin', (event) => event.target.select?.());
   $('inventorySearch').oninput = () => {
-    inventoryPage = 1;
-    renderInventory();
-  };
-  $('inventoryPagination').addEventListener('click', (event) => {
-    const button = event.target.closest('[data-inventory-page]');
-    if (!button || button.disabled) return;
-    inventoryPage = Number(button.dataset.inventoryPage);
-    renderInventory();
-  });
-  $('inventorySave').onclick = () => saveInventoryChanges();
+    if (inventoryDataTable) inventoryDataTable.draw();
+    else renderInventory();
+    updateInventorySummary();
+  };  $('inventorySave').onclick = () => saveInventoryChanges();
   $('inventoryDiscard').onclick = () => {
     inventoryPending.clear();
     renderInventory();
