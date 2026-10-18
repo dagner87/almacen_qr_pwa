@@ -110,3 +110,4 @@ PWA en español para administrar inventario de almacén, ubicaciones de racks, p
 - v101 Operador: el panel de accesos (Crear pallet, Escanear, Buscar, Devoluciones) también se muestra en escritorio; pantalla de inicio ya no depende del ancho.
 - v102 Operador: acceso “Nuevo pallet” siempre disponible para operadores aunque no tengan el permiso general de pallets; crea desde el panel sin ubicación inicial y sin permisos para editar/mover otros pallets. Se añade política RLS de inserción por rol; aplicar el SQL de actualización antes de crear en Supabase.
 - v103 Devoluciones: el botón QR muestra la etiqueta y el código QR; al imprimir una devolución, la primera página contiene el QR y la segunda página lista los códigos en dos columnas.
+- v104 QR: en todos los QR de pallets hay un botón para desplegar la lista de códigos horizontal; con dos o más códigos se muestra en dos columnas, y la impresión agrega la lista en una segunda página.

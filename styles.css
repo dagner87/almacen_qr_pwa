@@ -99,6 +99,6 @@
 
 .missing-location{display:inline-block;padding:2px 7px;border-radius:6px;background:#fde8e7;color:#b42318;font-weight:800}
 
-.qr-main-print-page{display:contents}.qr-return-code-sheet{display:none}
+.qr-main-print-page{display:contents}.qr-code-sheet{display:none}
 
 .move-location-results{display:flex;flex-direction:column;gap:5px;max-height:44vh;overflow:auto;padding:4px;border:1px solid var(--line);border-radius:10px;background:#f8faf8}.move-location-option{display:flex;justify-content:space-between;gap:10px;width:100%;padding:10px 12px;border:1px solid transparent;border-radius:8px;background:#fff;color:var(--ink);text-align:left}.move-location-option:hover,.move-location-option:focus{border-color:var(--green2);background:#eef4df}.move-location-option span{color:var(--muted);font-size:12px}.qr-generating{display:grid;place-items:center;width:190px;height:190px;color:var(--muted);font-size:13px}
