@@ -14,7 +14,7 @@ function showView(view) {
     view = 'dashboard';
     toast('Esta sección requiere permisos de administrador.');
   }
-  const operatorDeviceHome = view === 'dashboard' && currentProfile?.role === 'operator' && window.matchMedia('(max-width: 900px)').matches;
+  const operatorDeviceHome = view === 'dashboard' && currentProfile?.role === 'operator';
   if (!ADMIN_VIEWS.includes(view) && !canAccessModule(view) && !operatorDeviceHome) {
     view = MODULES.map(([key]) => key).find(canAccessModule) || 'dashboard';
     toast('No tienes permiso para abrir ese módulo.');
@@ -47,7 +47,7 @@ function updateBreadcrumb(view) {
   if (!breadcrumb) return;
   const tab = [...document.querySelectorAll('.tab')].find((item) => item.dataset.view === view);
   const label = tab?.textContent.trim() || view;
-  const canGoHome = view !== 'dashboard' && (canAccessModule('dashboard') || (currentProfile?.role === 'operator' && window.matchMedia('(max-width: 900px)').matches));
+  const canGoHome = view !== 'dashboard' && (canAccessModule('dashboard') || currentProfile?.role === 'operator');
   breadcrumb.innerHTML = `<ol>${canGoHome ? '<li><button type="button" data-breadcrumb-home>Inicio</button></li><li aria-current="page">' : '<li aria-current="page">'}${label}</li></ol>`;
   const home = breadcrumb.querySelector('[data-breadcrumb-home]');
   if (home) home.addEventListener('click', () => showView('dashboard'));

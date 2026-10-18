@@ -200,3 +200,25 @@ img,canvas,svg,video{max-width:100%}
  .operator-stock-edit input{min-width:0;min-height:42px;margin:0;text-align:center}
  .operator-stock-edit button{min-height:42px;padding:8px}
 }
+
+@media(min-width:901px){
+ body.operator-device-home #dashboard>:not(#operatorLauncher){display:none!important}
+ body.operator-device-home #operatorLauncher:not([hidden]){display:block}
+ .operator-launcher{max-width:1180px;margin:0 auto;padding:10px 0 28px}
+ .operator-launcher-head{margin:0 0 18px;padding:26px 28px;border-radius:18px;background:linear-gradient(135deg,#123f35,#17634e);color:#fff;box-shadow:0 8px 22px #123b321c}
+ .operator-launcher-head .eyebrow{color:#d6f06d;margin:0 0 7px}
+ .operator-launcher-head h2{margin:0;color:#fff;font-size:28px}
+ .operator-launcher-head p:last-child{margin:8px 0 0;color:#e5efe9}
+ .operator-action-group{margin:0 0 16px;padding:18px;border:1px solid #e3e9e5;border-radius:18px;background:#fff;box-shadow:0 4px 16px #15251b0a}
+ .operator-action-group[hidden],.operator-action[hidden]{display:none!important}
+ .operator-action-group h3{margin:0 0 12px;color:#52625a;font-size:12px;letter-spacing:.1em}
+ .operator-action-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+ .operator-action{display:flex;min-width:0;min-height:170px;flex-direction:column;align-items:center;justify-content:center;gap:9px;padding:18px 14px;border:1px solid #e3e9e5;border-radius:15px;background:#fbfcfb;color:#18392f;text-align:center;white-space:normal}
+ .operator-action:hover{border-color:#8aaa9c;background:#f3f8f4}
+ .operator-action-icon{display:grid;width:72px;height:72px;place-items:center;border:1px solid #b8c8bf;border-radius:14px;background:#fff;color:#17634e}
+ .operator-create-pallet-action .operator-action-icon{position:relative}
+ .operator-create-pallet-action .operator-action-icon::after{content:"+";position:absolute;top:-8px;right:-8px;display:grid;width:27px;height:27px;place-items:center;border:2px solid #fff;border-radius:50%;background:var(--lime);color:var(--green);font-size:21px;font-weight:800;line-height:1;box-shadow:0 2px 6px #123b3230}
+ .operator-action-icon svg{width:50px;height:50px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+ .operator-action strong{font-size:16px;line-height:1.2}
+ .operator-action small{max-width:240px;color:#68776f;font-size:13px;line-height:1.35}
+}

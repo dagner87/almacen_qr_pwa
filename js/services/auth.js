@@ -169,7 +169,7 @@ function updateConnectivity() {
   $('syncBadge').textContent = AUTH_DISABLED ? 'Modo local' : ready ? 'En tiempo real' : 'Solo consulta';
   $('signOutBtn').hidden = AUTH_DISABLED || !currentUser;
   $('menuToggle').hidden = !AUTH_DISABLED && !currentUser;
-const operatorDeviceHome = currentProfile?.role === 'operator' && window.matchMedia('(max-width: 900px)').matches;
+const operatorDeviceHome = currentProfile?.role === 'operator';
   document.body.classList.toggle('operator-device-home', operatorDeviceHome);
   document.getElementById('operatorLauncher').hidden = !operatorDeviceHome;
   if (!AUTH_DISABLED && !currentUser) toggleMobileMenu(false);

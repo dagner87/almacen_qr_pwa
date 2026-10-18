@@ -107,3 +107,4 @@ PWA en español para administrar inventario de almacén, ubicaciones de racks, p
 - Despliegue de la alerta: ejecutar la migración 004; supabase functions deploy stock-alerts; secrets RESEND_API_KEY (y opcional ALERT_FROM).
 - v99 Devoluciones: nueva vista agrupada por tienda con búsqueda por tienda, código de caja, pallet y ubicación; filtros de estado, totales de cajas/pallets activos y accesos para editar o abrir el QR. Reutiliza el permiso `pallets`; interfaz en `js/features/returns.js` y `returns.css`.
 - v100 Dashboard del operador: acceso con icono a Devoluciones, después de Crear pallet, Escanear y Buscar; conserva el permiso de `pallets`.
+- v101 Operador: el panel de accesos (Crear pallet, Escanear, Buscar, Devoluciones) también se muestra en escritorio; pantalla de inicio ya no depende del ancho.
