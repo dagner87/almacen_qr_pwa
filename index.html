@@ -34,17 +34,17 @@
   </div></section>
 </div>
 <div class="dash-hero"><div><p class="eyebrow">PANEL DE CONTROL</p><h2 id="dashGreeting">Resumen del almacén</h2><p>Ubicaciones, pallets y existencias en tiempo real.</p></div><div class="dash-hero-meta"><span id="dashDate"></span><button class="dash-cta" data-goto="search" data-module="search">Buscar producto</button></div></div>
-<details class="dash-card accordion kpi-acc"><summary>Resumen en cifras</summary><div class="kpi-grid">
+<details class="dash-card accordion kpi-acc" open><summary>Resumen en cifras</summary><div class="kpi-grid">
 <article class="kpi"><div class="kpi-icon">▦</div><div><span>Racks</span><strong id="statRacks">0</strong></div></article>
 <article class="kpi"><div class="kpi-icon">▤</div><div><span>Posiciones</span><strong id="statLocations">0</strong><small id="statFree"></small></div></article>
 <article class="kpi"><div class="kpi-icon">▣</div><div><span>Pallets activos</span><strong id="statPallets">0</strong></div></article>
 <article class="kpi"><div class="kpi-icon">◫</div><div><span>Unidades / cajas</span><strong id="statBoxes">0</strong></div></article>
 </div></details>
 <div class="dash-grid">
-<details class="dash-card accordion"><summary>Ocupación</summary><div class="occ-wrap"><div class="occ-ring" id="occRing"><div><strong id="occPct">0%</strong><small>ocupado</small></div></div><ul class="occ-legend"><li><i class="dot used"></i>Ocupadas <b id="occUsed">0</b></li><li><i class="dot free"></i>Libres <b id="occFree">0</b></li></ul></div></details>
-<details class="dash-card accordion"><summary>Ocupación por rack</summary><div id="rackBars" class="rack-bars"></div></details>
+<details class="dash-card accordion" open><summary>Ocupación</summary><div class="occ-wrap"><div class="occ-ring" id="occRing"><div><strong id="occPct">0%</strong><small>ocupado</small></div></div><ul class="occ-legend"><li><i class="dot used"></i>Ocupadas <b id="occUsed">0</b></li><li><i class="dot free"></i>Libres <b id="occFree">0</b></li></ul></div></details>
+<details class="dash-card accordion" open><summary>Ocupación por rack</summary><div id="rackBars" class="rack-bars"></div></details>
 <details class="dash-card accordion" hidden><summary>Stock bajo / por reponer</summary><div id="lowStock" class="low-stock"></div></details>
-<details class="dash-card accordion"><summary>Productos con más existencias</summary><div id="topProducts" class="top-products"></div></details>
+<details class="dash-card accordion" open><summary>Productos con más existencias</summary><div id="topProducts" class="top-products"></div></details>
 </div>
 <details class="dash-card accordion quick-acc"><summary>Accesos rápidos</summary><div class="quick-grid">
 <button class="quick" data-goto="scan" data-module="scan"><span>⌗</span><b>Escanear código</b><small>Consultar una ubicación o pallet</small></button>
