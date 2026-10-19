@@ -192,8 +192,7 @@ async function savePallet(event) {
       return externalCode ? { ...plainItem, externalCode: true } : plainItem;
     }),
     isExternal = products.some((item) => item.externalCode),
-    mergePlans = new Map(),
-    mergeSummary = [];
+    duplicateNotices = [];
   if (isExternal && products.some((item) => item.quantity !== 1)) {
     toast('Cada código externo identifica una sola pieza; la cantidad debe ser 1.');
     return;
@@ -216,40 +215,8 @@ async function savePallet(event) {
       (match) => match.pallet.storeId === storeId,
     );
     if (!matches.length) continue;
-    const groups = new Map();
-    for (const match of matches) {
-      let group = groups.get(match.pallet.id);
-      if (!group) {
-        group = { pallet: match.pallet, items: [], quantity: 0 };
-        groups.set(match.pallet.id, group);
-      }
-      group.items.push(match.item);
-      group.quantity += Number(match.item.quantity || 0);
-    }
-    const locations = [...groups.values()]
-      .map(
-        (group) => `${group.pallet.code}: ${group.quantity.toLocaleString()} en ${locLabel(group.pallet.locationId)}`,
-      )
-      .join('\n');
-    const unify = confirm(
-      `El c\u00f3digo ${product.productCode} ya existe en otros pallets:\n${locations}\n\nAceptar: trasladar esas cantidades al pallet actual y quitarlas de los pallets indicados.\nCancelar: mantener las existencias en sus ubicaciones separadas.`,
-    );
-    if (!unify) continue;
-    const transferQuantity = [...groups.values()].reduce((sum, group) => sum + group.quantity, 0),
-      combinedQuantity = product.quantity + transferQuantity;
-    if (!Number.isSafeInteger(combinedQuantity)) {
-      toast(`La cantidad unificada del c\u00f3digo ${product.productCode} excede el l\u00edmite permitido.`);
-      return;
-    }
-    product.quantity = combinedQuantity;
-    if (!product.description)
-      product.description = matches.find((match) => match.item.description)?.item.description || '';
-    mergeSummary.push({ productCode: product.productCode, quantity: transferQuantity });
-    for (const group of groups.values()) {
-      const plan = mergePlans.get(group.pallet.id) || { pallet: group.pallet, codes: new Map() };
-      plan.codes.set(product.productCode.trim().toLocaleUpperCase(), group.quantity);
-      mergePlans.set(group.pallet.id, plan);
-    }
+    const locations = [...new Set(matches.map((match) => `${match.pallet.code} en ${locLabel(match.pallet.locationId)}`))].join(', ');
+    duplicateNotices.push(`${product.productCode}: ${locations}`);
   }
   const quantity = products.reduce((sum, item) => sum + item.quantity, 0);
   if (!Number.isSafeInteger(quantity)) {
@@ -277,28 +244,9 @@ async function savePallet(event) {
     createdAt: old?.createdAt || now(),
     updatedAt: now(),
   };
-  const sourceUpdates = [...mergePlans.values()].map((plan) => {
-    const remainingProducts = palletProducts(plan.pallet).filter(
-        (item) =>
-          !plan.codes.has(
-            String(item.productCode || '')
-              .trim()
-              .toLocaleUpperCase(),
-          ),
-      ),
-      remainingQuantity = remainingProducts.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
-    return {
-      ...plan.pallet,
-      products: remainingProducts,
-      boxes: remainingQuantity,
-      status: remainingQuantity > 0 ? 'active' : 'empty',
-      description: remainingQuantity > 0 ? plan.pallet.description : 'Pallet vacío',
-      updatedAt: now(),
-    };
-  });
   try {
     await saveCatalogFromProducts(products.filter((item) => !item.externalCode));
-    let savedRows = [pallet, ...sourceUpdates];
+    let savedRows = [pallet];
     if (!AUTH_DISABLED) {
       const { data, error } = await supabaseClient.from('pallets').upsert(savedRows).select();
       if (error) throw error;
@@ -316,19 +264,13 @@ async function savePallet(event) {
         `${quantity} unidades · ${products.length} productos`,
         products,
       );
-      for (const plan of mergePlans.values()) {
-        const details = [...plan.codes.entries()]
-          .map(([productCode, moved]) => `${productCode}: ${moved} unidades`)
-          .join(', ');
-        await logMove('Consolidación de producto', plan.pallet.code, plan.pallet.locationId, locationId, details);
-      }
     }
     await loadState();
     notifyStockChange();
     $('palletDialog').close();
     toast(
-      mergeSummary.length
-        ? `Pallet guardado. Se unificaron ${mergeSummary.map((item) => `${item.productCode} (+${item.quantity})`).join(', ')}.`
+      duplicateNotices.length
+        ? `Pallet guardado. ${duplicateNotices.join('; ')}. Las otras posiciones y cantidades se conservaron.`
         : AUTH_DISABLED
           ? 'Pallet guardado en este dispositivo.'
           : 'Pallet guardado.',

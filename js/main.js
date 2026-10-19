@@ -74,7 +74,7 @@ $('palletProductRows').addEventListener('change', (event) => {
         (group) => `${group.pallet.code}: ${group.quantity.toLocaleString()} en ${locLabel(group.pallet.locationId)}`,
       )
       .join(' · ');
-    toast(`El c\u00f3digo ${code} ya existe: ${places}. Al guardar elige unificar o mantener separado.`);
+    toast(`El c\u00f3digo ${code} ya aparece en otras ubicaciones: ${places}. Puedes cambiar la cantidad en este pallet; las otras cantidades se conservar\u00e1n.`);
   }
 });
 $('palletProductRows').addEventListener('click', (event) => {
