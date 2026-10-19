@@ -54,7 +54,8 @@ function paintProductLookup(pallets, locations) {
     for (const item of palletProducts(pallet)) {
       const productCode = String(item.productCode || '').toLocaleLowerCase(),
         description = String(productDescription(item)).toLocaleLowerCase(),
-        returnStore = String(item.returnStore || '').toLocaleLowerCase(),\r\n      storeName = String(storeNameFor(pallet.storeId)).toLocaleLowerCase();
+        returnStore = String(item.returnStore || '').toLocaleLowerCase(),
+        storeName = String(storeNameFor(pallet.storeId)).toLocaleLowerCase();
       if (productCode.includes(query) || description.includes(query) || returnStore.includes(query) || storeName.includes(query)) matches.push({ pallet, item });
     }
   }

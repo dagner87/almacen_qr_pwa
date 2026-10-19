@@ -6,11 +6,14 @@ Para cambios posteriores se crea un archivo nuevo aquí, con nombre `AAAAMMDD_NN
 
 Se ejecutan en orden, una sola vez cada una, en Supabase > SQL Editor.
 
-| Archivo | Qué hace |
+| Archivo | Que hace |
 | --- | --- |
-| `20261014_001_repair_profile_access.sql` | Recrea perfiles faltantes y la política de lectura; restablece el admin. Úsalo si aparece «No se encontró tu perfil». |
-| `20261014_002_operator_permissions.sql` | Operador con escaneo y ubicaciones. |
+| `20261014_001_repair_profile_access.sql` | Repara perfiles y acceso; usar solo si aparece "No se encontro tu perfil". |
+| `20261014_002_operator_permissions.sql` | Permisos predeterminados para operadores. |
 | `20261014_003_stock_movements_trigger.sql` | Registro de entradas, salidas y ajustes de stock. |
-| `20261018_001_stores_and_pallet_ownership.sql` | Cat�logo de tiendas y asignaci�n de tienda propietaria a pallets. |
-
+| `20261014_004_stock_limits_alerts.sql` | Tablas de minimos/maximos y configuracion de alertas. |
+| `20261014_005_product_catalog.sql` | Crea y carga el catalogo inicial de productos. |
+| `20261015_001_product_catalog_descriptions.sql` | Permite actualizar descripciones del catalogo con permisos RLS. |
+| `20261018_001_stores_and_pallet_ownership.sql` | Catalogo de tiendas y asignacion de tienda propietaria a pallets. |
+| `20261018_002_seed_initial_stores.sql` | Registra Mango, Zara y Massimo Dutty sin duplicar tiendas existentes. |
 Las columnas `placed_*`, `moves.products` y los triggers anteriores están en `supabase.sql`.

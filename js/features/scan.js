@@ -25,7 +25,7 @@ async function handleCode(code) {
               summary = products.length
                 ? products.map((item) => `${escapeHtml(item.productCode)} × ${Number(item.quantity)}`).join(' · ')
                 : `${escapeHtml(pallet.brand || 'Sin marca')} · ${Number(pallet.boxes || 0)} cajas`;
-            return `<div class="item"><div class="item-main"><b>${escapeHtml(pallet.code)} · ${escapeHtml(pallet.description)}</b><div class="item-sub">${summary}</div></div><button class="mini" data-edit-pallet="${pallet.id}">Editar</button></div>`;
+            return `<div class="item"><div class="item-main"><b>${escapeHtml(pallet.code)} · ${escapeHtml(pallet.description)}</b><div class="item-sub">${summary}</div><div class="item-sub">Tienda propietaria: <b>${escapeHtml(storeNameFor(pallet.storeId, pallet.storeName || 'Sin tienda asignada'))}</b></div></div><button class="mini" data-edit-pallet="${pallet.id}">Editar</button></div>`;
           })
           .join('') || '<div class="empty">Esta posición está vacía.</div>'
       }</div><div class="button-row"><button class="primary" id="associatePalletHere">Asociar pallet aquí</button><button class="secondary" id="newAtLocation">＋ Registrar pallet aquí</button><button class="secondary" id="labelLocation">Mostrar QR ubicación</button></div></div>`;

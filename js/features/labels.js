@@ -153,8 +153,6 @@ function openPalletQr(p) {
   const products = palletProducts(p),
     ownerStore = storeNameFor(p.storeId),
     isReturn = products.length > 0 && products.every((item) => item.externalCode),
-    returnStores = [...new Set(products.map((item) => String(item.returnStore || '').trim()).filter(Boolean))],
-    returnStoreLabel = returnStores.length === 1 ? returnStores[0] : returnStores.length ? 'Varias tiendas' : 'Tienda sin indicar',
     payload = {
       type: 'pallet',
       code: p.code,
@@ -169,7 +167,7 @@ function openPalletQr(p) {
           .join('')}</div>`
       : '',
     codeListSummary = isReturn
-      ? `<p><b>Pallet:</b> ${escapeHtml(p.code)} · <b>Tienda:</b> ${escapeHtml(returnStoreLabel)} · <b>Cajas:</b> ${products.length}</p>`
+      ? `<p><b>Pallet:</b> ${escapeHtml(p.code)} · <b>Tienda propietaria:</b> ${escapeHtml(ownerStore)} · <b>Cajas:</b> ${products.length}</p>`
       : `<p><b>Pallet:</b> ${escapeHtml(p.code)} · <b>Códigos:</b> ${products.length} · <b>Unidades:</b> ${palletQuantity(p).toLocaleString()}</p>`,
     codeListHtml = products.length ? `<h3>Lista de códigos</h3>${codeListSummary}${codeGrid}` : '',
     printCodeSheet = products.length

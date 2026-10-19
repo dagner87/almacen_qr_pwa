@@ -29,16 +29,25 @@ function fillPalletStoreOptions(selectedId = $('palletStoreId')?.value || '') {
 function renderStores() {
   const target = $('storeList');
   if (!target) return;
-  const stores = [...state.stores].sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
+  const stores = [...state.stores].sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' })),
+    unassigned = state.pallets.filter((pallet) => !pallet.storeId && pallet.status !== 'retired').length,
+    notice = $('storeAssignmentNotice');
+  if (notice) {
+    notice.hidden = !unassigned;
+    notice.textContent = unassigned
+      ? `${unassigned} pallet(s) activo(s) no tienen tienda propietaria. Edítalos desde Pallets para asignarles una.`
+      : '';
+  }
   target.innerHTML = stores.length
     ? stores
         .map((store) => {
           const palletCount = state.pallets.filter((pallet) => pallet.storeId === store.id).length;
-          return `<article class="item"><div class="item-main"><div class="item-title">${escapeHtml(store.name)}</div><div class="item-sub">${store.active === false ? 'Inactiva' : 'Activa'} · ${palletCount} pallet(s) asignado(s)</div></div><div class="item-actions"><button type="button" class="mini" data-edit-store="${escapeHtml(store.id)}">Editar</button><button type="button" class="mini" data-toggle-store-active="${escapeHtml(store.id)}">${store.active === false ? 'Activar' : 'Desactivar'}</button></div></article>`;
+          return `<article class="item"><div class="item-main"><div class="item-title">${escapeHtml(store.name)}</div><div class="item-sub">${store.active === false ? 'Inactiva' : 'Activa'} · ${palletCount} pallet(s) asignado(s)</div></div><div class="item-actions"><button type="button" class="mini" data-edit-store="${escapeHtml(store.id)}" data-write>Editar</button><button type="button" class="mini" data-toggle-store-active="${escapeHtml(store.id)}" data-write>${store.active === false ? 'Activar' : 'Desactivar'}</button></div></article>`;
         })
         .join('')
     : '<div class="empty">Aún no hay tiendas registradas.</div>';
   fillPalletStoreOptions();
+  updateConnectivity();
 }
 
 function resetStoreForm() {

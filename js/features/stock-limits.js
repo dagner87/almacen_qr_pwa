@@ -3,10 +3,10 @@ let stockLimits = [];
 let alertConfig = { enabled: true, emails: '', warn_pct: 20 };
 let notifyTimer = null;
 
-function stockTotals() {
+function stockTotals(storeId = '') {
   const totals = new Map();
   for (const pallet of state.pallets) {
-    if (pallet.status !== 'active') continue;
+    if (pallet.status !== 'active' || (storeId && pallet.storeId !== storeId)) continue;
     for (const item of palletProducts(pallet)) {
       const code = String(item.productCode || '').trim().toLocaleUpperCase();
       if (!code) continue;

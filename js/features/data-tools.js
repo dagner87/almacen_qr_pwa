@@ -1,8 +1,18 @@
 /* Pantalla Datos / Sync: exportar e importar. */
 function exportInventoryCsv() {
+  if (inventoryPending.size) {
+    toast('Guarda o descarta los cambios pendientes antes de exportar el reporte.');
+    return;
+  }
+  const storeId = $('inventoryStoreFilter')?.value || '',
+    selectedStore = storeById(storeId);
+  if (storeId && !selectedStore) {
+    toast('La tienda seleccionada ya no está disponible.');
+    return;
+  }
   const rows = [
     ['Pallet', 'Tienda propietaria', 'Ubicación', 'Marca', 'Mercancía', 'Cajas', 'Productos (código:cantidad)', 'Estado', 'Actualizado'],
-    ...state.pallets.map((p) => [
+    ...state.pallets.filter((p) => !storeId || p.storeId === storeId).map((p) => [
       p.code,
       storeNameFor(p.storeId),
       locLabel(p.locationId),
@@ -17,12 +27,15 @@ function exportInventoryCsv() {
     ]),
   ];
   const csv = rows.map((r) => r.map((v) => '"' + String(v ?? '').replace(/"/g, '""') + '"').join(',')).join('\r\n');
-  download('inventario-almacen.csv', '\ufeff' + csv, 'text/csv;charset=utf-8');
+  const storeFileName = selectedStore
+    ? normalizeInventoryFilter(selectedStore.name).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+    : 'todas-las-tiendas';
+  download(`inventario-${storeFileName}.csv`, '\ufeff' + csv, 'text/csv;charset=utf-8');
 }
 
 async function exportBackup() {
   const data = {
-    version: 2,
+    version: 3,
     exportedAt: now(),
     racks: await all('racks'),
     stores: await all('stores'),

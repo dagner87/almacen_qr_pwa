@@ -64,7 +64,7 @@ alter table public.stores enable row level security;
 drop policy if exists "authenticated can read stores" on public.stores;
 drop policy if exists "admins manage stores" on public.stores;
 create policy "authenticated can read stores" on public.stores
-  for select to authenticated using (public.is_admin() or public.can_create_pallet());
+  for select to authenticated using (true);
 create policy "admins manage stores" on public.stores
   for all to authenticated using (public.is_admin()) with check (public.is_admin());
 grant select, insert, update, delete on public.stores to authenticated;

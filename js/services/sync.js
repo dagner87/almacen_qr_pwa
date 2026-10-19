@@ -79,7 +79,7 @@ async function syncToCloud() {
   if (!canWrite(currentProfile.role === 'admin'))
     throw new Error('Solo el administrador puede sincronizar cambios estructurales.');
   if (currentProfile.role === 'admin') {
-    for (const store of ['racks', 'locations', 'pallets']) {
+    for (const store of ['racks', 'locations', 'stores', 'pallets']) {
       const localRows = await all(store);
       if (!localRows.length) continue;
       const { data, error } = await fetchAllRows(store);

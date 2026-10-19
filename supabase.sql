@@ -30,6 +30,7 @@ create table if not exists public.stores (
 );
 create unique index if not exists stores_name_case_insensitive_idx on public.stores (lower(name));
 
+
 create table if not exists public.pallets (
   id text primary key,
   code text not null unique,
@@ -87,6 +88,20 @@ where pallet."storeId" is null
     ) product
     where nullif(trim(product ->> 'returnStore'), '') is not null
   );
+-- Tiendas iniciales (tambien incluidas en la migracion 20261018_002).
+insert into public.stores (id, name, active)
+select seed.id, seed.name, true
+from (values
+  ('STORE-MANGO', 'Mango'),
+  ('STORE-ZARA', 'Zara'),
+  ('STORE-MASSIMO-DUTTY', 'Massimo Dutty')
+) as seed(id, name)
+where not exists (
+  select 1
+  from public.stores store
+  where lower(trim(store.name)) = lower(trim(seed.name))
+)
+on conflict do nothing;
 alter table public.pallets add column if not exists created_by uuid;
 alter table public.pallets add column if not exists created_by_email text;
 alter table public.pallets add column if not exists updated_by uuid;
@@ -437,7 +452,7 @@ create policy "admins manage locations" on public.locations
 for all to authenticated using (public.is_admin()) with check (public.is_admin());
 
 create policy "authenticated can read stores" on public.stores
-for select to authenticated using (public.is_admin() or public.can_create_pallet());
+for select to authenticated using (true);
 create policy "admins manage stores" on public.stores
 for all to authenticated using (public.is_admin()) with check (public.is_admin());
 grant select, insert, update, delete on public.stores to authenticated;

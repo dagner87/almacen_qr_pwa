@@ -2,6 +2,7 @@
 const inventoryPending = new Map();
 const INVENTORY_PAGE_SIZE = 50;
 let inventoryDataTable = null;
+let lastInventoryStoreFilter = '';
 const STOCK_ACTIONS = ['Entrada de stock', 'Salida de stock', 'Ajuste de stock', 'Actualización de stock'];
 
 function inventoryKey(pallet, item) {
@@ -24,18 +25,32 @@ function normalizeInventoryFilter(value) {
     .toLocaleLowerCase();
 }
 
+function fillInventoryStoreOptions() {
+  const select = $('inventoryStoreFilter');
+  if (!select) return;
+  const selected = select.value,
+    stores = [...state.stores].sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
+  select.innerHTML = `<option value="">Todas las tiendas</option>${stores
+    .map((store) => `<option value="${escapeHtml(store.id)}">${escapeHtml(store.name)}${store.active === false ? ' (inactiva)' : ''}</option>`)
+    .join('')}`;
+  select.value = stores.some((store) => store.id === selected) ? selected : '';
+  lastInventoryStoreFilter = select.value;
+}
+
 function visibleInventoryRows() {
-  const query = normalizeInventoryFilter(($('inventorySearch')?.value || '').trim());
+  const query = normalizeInventoryFilter(($('inventorySearch')?.value || '').trim()),
+    storeId = $('inventoryStoreFilter')?.value || '';
   return inventoryRows().filter(
     (row) =>
-      !query ||
-      [row.item.productCode, row.store, productDescription(row.item)].some((value) => normalizeInventoryFilter(value).includes(query),),
+      (!storeId || row.pallet.storeId === storeId) &&
+      (!query || [row.item.productCode, row.store, productDescription(row.item)].some((value) => normalizeInventoryFilter(value).includes(query))),
   );
 }
 
 function renderInventory() {
   const target = $('inventoryGrid');
   if (!target) return;
+  fillInventoryStoreOptions();
   const previousOrder = inventoryDataTable?.order(),
     previousPage = inventoryDataTable?.page() || 0;
   if (inventoryDataTable) {
@@ -56,7 +71,7 @@ function renderInventory() {
         entry = Number(pending?.in || 0),
         exit = Number(pending?.out || 0),
         next = current + entry - exit;
-      return `<tr data-key="${escapeHtml(key)}" data-current="${current}" data-pallet="${escapeHtml(pallet.id)}" data-code="${escapeHtml(String(item.productCode || ''))}"><td class="c-loc">${escapeHtml(loc)}</td><td class="c-pallet">${escapeHtml(pallet.code)}</td><td class="c-store">${escapeHtml(storeNameFor(pallet.storeId))}</td><td class="c-code"><strong>${escapeHtml(item.productCode)}</strong></td><td class="desc c-desc">${escapeHtml(productDescription(item))}</td><td class="num c-stock" data-order="${current}">${current.toLocaleString()}</td><td class="cell" data-order="${entry}"><input type="number" min="0" step="1" inputmode="numeric" data-f="in" value="${pending?.in || ''}" aria-label="Entrada"></td><td class="cell" data-order="${exit}"><input type="number" min="0" step="1" inputmode="numeric" data-f="out" value="${pending?.out || ''}" aria-label="Salida"></td><td class="cell" data-order="${next}"><input type="number" min="0" step="1" inputmode="numeric" data-f="new" value="${next}" aria-label="Nuevo stock"></td><td>${escapeHtml(key)}</td></tr>`;
+      return `<tr data-key="${escapeHtml(key)}" data-current="${current}" data-pallet="${escapeHtml(pallet.id)}" data-store-id="${escapeHtml(pallet.storeId || '')}" data-code="${escapeHtml(String(item.productCode || ''))}"><td class="c-loc">${escapeHtml(loc)}</td><td class="c-pallet">${escapeHtml(pallet.code)}</td><td class="c-store">${escapeHtml(storeNameFor(pallet.storeId))}</td><td class="c-code"><strong>${escapeHtml(item.productCode)}</strong></td><td class="desc c-desc">${escapeHtml(productDescription(item))}</td><td class="num c-stock" data-order="${current}">${current.toLocaleString()}</td><td class="cell" data-order="${entry}"><input type="number" min="0" step="1" inputmode="numeric" data-f="in" value="${pending?.in || ''}" aria-label="Entrada"></td><td class="cell" data-order="${exit}"><input type="number" min="0" step="1" inputmode="numeric" data-f="out" value="${pending?.out || ''}" aria-label="Salida"></td><td class="cell" data-order="${next}"><input type="number" min="0" step="1" inputmode="numeric" data-f="new" value="${next}" aria-label="Nuevo stock"></td><td>${escapeHtml(key)}</td></tr>`;
     })
     .join('')}</tbody></table>`;
   target.querySelectorAll('tr[data-key]').forEach(markInventoryRow);
@@ -93,10 +108,11 @@ function renderInventory() {
       },
     });
     inventoryDataTable.search.fixed('inventory-store-code-description', (_search, _data, index) => {
-      const query = normalizeInventoryFilter(($('inventorySearch')?.value || '').trim());
-      if (!query) return true;
-      const row = inventoryDataTable.row(index).node();
-      return [row?.cells[2]?.textContent, row?.cells[3]?.textContent, row?.cells[4]?.textContent]
+      const query = normalizeInventoryFilter(($('inventorySearch')?.value || '').trim()),
+        storeId = $('inventoryStoreFilter')?.value || '',
+        row = inventoryDataTable.row(index).node();
+      if (storeId && row?.dataset.storeId !== storeId) return false;
+      return !query || [row?.cells[2]?.textContent, row?.cells[3]?.textContent, row?.cells[4]?.textContent]
         .some((value) => normalizeInventoryFilter(value).includes(query));
     });
     inventoryDataTable.draw();
@@ -207,8 +223,14 @@ function updateInventorySummary() {
 function renderStockMoves() {
   const target = $('inventoryMoves');
   if (!target) return;
+  const storeId = $('inventoryStoreFilter')?.value || '',
+    palletsByIdOrCode = new Map(state.pallets.flatMap((pallet) => [[pallet.id, pallet], [pallet.code, pallet]]));
   const list = state.moves
-    .filter((move) => STOCK_ACTIONS.includes(move.action))
+    .filter((move) => {
+      if (!STOCK_ACTIONS.includes(move.action)) return false;
+      if (!storeId) return true;
+      return palletsByIdOrCode.get(move.palletId)?.storeId === storeId;
+    })
     .sort((a, b) => (b.at || '').localeCompare(a.at || ''))
     .slice(0, 15);
   target.innerHTML = list.length
@@ -341,14 +363,19 @@ async function saveInventoryChanges(auto = false) {
 }
 
 function exportInventoryCsv() {
+  if (inventoryPending.size) {
+    toast('Guarda o descarta los cambios pendientes antes de exportar el reporte.');
+    return;
+  }
   const quote = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+  const selectedStore = storeById($('inventoryStoreFilter')?.value || '');
   const lines = [['Ubicacion', 'Pallet', 'Tienda', 'Codigo', 'Descripcion', 'Stock'].map(quote).join(',')];
   for (const { pallet, item, loc } of visibleInventoryRows())
     lines.push([loc, pallet.code, storeNameFor(pallet.storeId), item.productCode, productDescription(item), Number(item.quantity || 0)].map(quote).join(','));
   const url = URL.createObjectURL(new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' }));
   const link = document.createElement('a');
   link.href = url;
-  link.download = `inventario-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.download = `inventario${selectedStore ? '-' + normalizeInventoryFilter(selectedStore.name).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') : ''}-${new Date().toISOString().slice(0, 10)}.csv`;
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
@@ -406,7 +433,25 @@ function bindInventoryGrid() {
     if (inventoryDataTable) inventoryDataTable.draw();
     else renderInventory();
     updateInventorySummary();
-  };  $('inventorySave').onclick = () => saveInventoryChanges();
+  };
+  $('inventoryStoreFilter').onchange = (event) => {
+    const selectedStoreId = event.target.value,
+      pendingFromOtherStore = selectedStoreId && [...inventoryPending.values()].some((change) => {
+        const pallet = state.pallets.find((item) => item.id === change.palletId);
+        return !pallet || pallet.storeId !== selectedStoreId;
+      });
+    if (pendingFromOtherStore) {
+      event.target.value = lastInventoryStoreFilter;
+      toast('Guarda o descarta los cambios pendientes antes de cambiar a otra tienda.');
+      return;
+    }
+    lastInventoryStoreFilter = selectedStoreId;
+    if (inventoryDataTable) inventoryDataTable.draw();
+    else renderInventory();
+    updateInventorySummary();
+    renderStockMoves();
+  };
+  $('inventorySave').onclick = () => saveInventoryChanges();
   $('inventoryDiscard').onclick = () => {
     inventoryPending.clear();
     renderInventory();

@@ -196,8 +196,8 @@ function zipStore(files) {
   return new Blob(parts, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
 }
 
-function inventoryReportRows() {
-  const totals = stockTotals(),
+function inventoryReportRows(storeId = '') {
+  const totals = stockTotals(storeId),
     used = new Set(),
     rows = [];
   const quantity = (code) => {
@@ -216,14 +216,24 @@ function inventoryReportRows() {
 }
 
 function exportInventoryExcel() {
+  if (inventoryPending.size) {
+    toast('Guarda o descarta los cambios pendientes antes de exportar el reporte.');
+    return;
+  }
+  const storeId = $('inventoryStoreFilter')?.value || '',
+    selectedStore = storeById(storeId);
+  if (storeId && !selectedStore) {
+    toast('La tienda seleccionada ya no está disponible.');
+    return;
+  }
   const cell = (ref, value, style) => {
       if (value === '' || value == null) return `<c r="${ref}" s="${style}"/>`;
       if (typeof value === 'number') return `<c r="${ref}" s="${style}"><v>${value}</v></c>`;
       return `<c r="${ref}" s="${style}" t="inlineStr"><is><t xml:space="preserve">${xmlEscape(value)}</t></is></c>`;
     },
     codeValue = (code) => (/^\d{1,15}$/.test(code) ? Number(code) : code),
-    data = inventoryReportRows();
-  let xml = `<row r="1" ht="15">${cell('A1', ' Supplies', 1)}${cell('B1', '', 1)}${cell('C1', '', 1)}${cell('D1', '', 1)}</row><row r="2">${cell('A2', '', 1)}${cell('B2', '', 1)}${cell('C2', '', 1)}${cell('D2', '', 1)}</row>`;
+    data = inventoryReportRows(storeId);
+  let xml = `<row r="1" ht="15">${cell('A1', selectedStore ? `${selectedStore.name} Supplies` : ' Supplies', 1)}${cell('B1', '', 1)}${cell('C1', '', 1)}${cell('D1', '', 1)}</row><row r="2">${cell('A2', '', 1)}${cell('B2', '', 1)}${cell('C2', '', 1)}${cell('D2', '', 1)}</row>`;
   xml += `<row r="3" ht="15.75">${['Reference #', 'Description', 'Box', 'Units'].map((t, i) => cell('ABCD'[i] + 3, t, 2)).join('')}</row>`;
   data.forEach((row, i) => {
     const r = i + 4,
@@ -249,7 +259,8 @@ function exportInventoryExcel() {
     url = URL.createObjectURL(blob),
     link = document.createElement('a');
   link.href = url;
-  link.download = `Massimo Dutti General Services Inventory  ${stamp}.xlsx`;
+  const storeFileName = selectedStore?.name || 'Todas las tiendas';
+  link.download = `${normalizeInventoryFilter(storeFileName).replace(/[^a-z0-9]+/g, ' ').trim()} General Services Inventory ${stamp}.xlsx`;
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
