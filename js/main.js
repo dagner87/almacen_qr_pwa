@@ -215,7 +215,7 @@ bindCatalog();
     }
     event.target.value = '';
   };
-  $('printQr').onclick = () => window.print();
+  $('printQr').onclick = printQr;
   $('printPalletQr').onclick = () => {
     if (!canWrite()) return;
     const pallet = state.pallets.find((item) => item.id === $('palletId').value);

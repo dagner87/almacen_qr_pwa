@@ -113,7 +113,6 @@ function qrRender(container, code, size = 190) {
 }
 
 function openQr(code, title, qrValue = code, extraHtml = '', printPagesHtml = '', codeListHtml = '') {
-  currentQr = { code, title };
   $('qrTitle').textContent = title;
   const qrContent = $('qrContent'),
     qrMarkup = `<div id="qrImage" class="qr-generating">Generando QR…</div><strong>${escapeHtml(code)}</strong><p class="muted small">${escapeHtml(title)}</p>${extraHtml}`;
@@ -135,6 +134,7 @@ function openQr(code, title, qrValue = code, extraHtml = '', printPagesHtml = ''
   $('printQr').textContent = printPagesHtml ? 'Imprimir QR + lista (2 páginas)' : 'Imprimir etiqueta';
   const bytes = new TextEncoder().encode(qrValue).length,
     size = bytes > 700 ? 320 : bytes > 350 ? 260 : 190;
+  currentQr = { code, title, qrValue, size };
   $('qrDialog').showModal();
   requestAnimationFrame(() => {
     const container = $('qrContent').querySelector('#qrImage');
@@ -147,6 +147,43 @@ function openQr(code, title, qrValue = code, extraHtml = '', printPagesHtml = ''
       toast('No se pudo generar el código QR.');
     }
   });
+}
+
+function printQr() {
+  const source = $('qrContent');
+  if (!source || !currentQr?.qrValue) return;
+  $('qrPrintArea')?.remove();
+  const printArea = document.createElement('div'),
+    mainPage = document.createElement('section'),
+    mainSource = source.querySelector('.qr-main-print-page') || source;
+  printArea.id = 'qrPrintArea';
+  printArea.classList.toggle('qr-has-code-sheet', Boolean(source.querySelector('.qr-code-sheet')));
+  mainPage.className = 'qr-print-page qr-print-main';
+  for (const child of mainSource.childNodes) {
+    if (child.nodeType === Node.ELEMENT_NODE && child.matches('#qrCodeListPanel, .qr-code-sheet')) continue;
+    mainPage.appendChild(child.cloneNode(true));
+  }
+  printArea.appendChild(mainPage);
+  const codeSheet = source.querySelector('.qr-code-sheet');
+  if (codeSheet) {
+    const page = codeSheet.cloneNode(true);
+    page.classList.add('qr-print-page');
+    printArea.appendChild(page);
+  }
+  document.body.appendChild(printArea);
+  const qrContainer = printArea.querySelector('#qrImage');
+  if (qrContainer) {
+    qrRender(qrContainer, currentQr.qrValue, currentQr.size);
+    qrContainer.classList.remove('qr-generating');
+  }
+  document.body.classList.add('printing-qr');
+  const done = () => {
+    document.body.classList.remove('printing-qr');
+    printArea.remove();
+    window.removeEventListener('afterprint', done);
+  };
+  window.addEventListener('afterprint', done);
+  requestAnimationFrame(() => setTimeout(() => window.print(), 50));
 }
 
 function openPalletQr(p) {
