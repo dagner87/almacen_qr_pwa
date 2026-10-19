@@ -32,6 +32,7 @@ function showView(view) {
 function renderAll() {
   renderDashboard();
   renderLocations();
+  renderStores();
   renderPallets();
   fillLocationOptions();
   renderRecent();

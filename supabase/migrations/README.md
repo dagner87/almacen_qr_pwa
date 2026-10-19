@@ -11,5 +11,6 @@ Se ejecutan en orden, una sola vez cada una, en Supabase > SQL Editor.
 | `20261014_001_repair_profile_access.sql` | Recrea perfiles faltantes y la política de lectura; restablece el admin. Úsalo si aparece «No se encontró tu perfil». |
 | `20261014_002_operator_permissions.sql` | Operador con escaneo y ubicaciones. |
 | `20261014_003_stock_movements_trigger.sql` | Registro de entradas, salidas y ajustes de stock. |
+| `20261018_001_stores_and_pallet_ownership.sql` | Cat�logo de tiendas y asignaci�n de tienda propietaria a pallets. |
 
 Las columnas `placed_*`, `moves.products` y los triggers anteriores están en `supabase.sql`.

@@ -4,7 +4,7 @@ function openDb() {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onupgradeneeded = () => {
       const d = req.result;
-      ['racks', 'locations', 'pallets', 'moves', 'settings'].forEach((s) => {
+      ['racks', 'locations', 'stores', 'pallets', 'moves', 'settings'].forEach((s) => {
         if (!d.objectStoreNames.contains(s)) d.createObjectStore(s, { keyPath: s === 'settings' ? 'key' : 'id' });
       });
     };
@@ -41,7 +41,7 @@ function del(store, id) {
 }
 
 async function loadState() {
-  for (const s of ['racks', 'locations', 'pallets', 'moves', 'settings']) state[s] = await all(s);
+  for (const s of ['racks', 'locations', 'stores', 'pallets', 'moves', 'settings']) state[s] = await all(s);
   state.settings = Object.fromEntries(state.settings.map((x) => [x.key, x.value]));
   renderAll();
   if (typeof refreshStockLimits === 'function') refreshStockLimits();

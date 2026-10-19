@@ -13,7 +13,7 @@ function inventoryRows() {
   for (const pallet of state.pallets) {
     if (pallet.status !== 'active') continue;
     for (const item of palletProducts(pallet))
-      rows.push({ pallet, item, key: inventoryKey(pallet, item), loc: locLabel(pallet.locationId) });
+      rows.push({ pallet, item, key: inventoryKey(pallet, item), loc: locLabel(pallet.locationId), store: storeNameFor(pallet.storeId) });
   }
   return rows;
 }
@@ -29,7 +29,7 @@ function visibleInventoryRows() {
   return inventoryRows().filter(
     (row) =>
       !query ||
-      [row.item.productCode, productDescription(row.item)].some((value) => normalizeInventoryFilter(value).includes(query),),
+      [row.item.productCode, row.store, productDescription(row.item)].some((value) => normalizeInventoryFilter(value).includes(query),),
   );
 }
 
@@ -49,14 +49,14 @@ function renderInventory() {
     renderStockMoves();
     return;
   }
-  target.innerHTML = `<table id="inventoryTable" class="inventory-grid"><thead><tr><th class="c-loc">Ubicaci\u00f3n</th><th class="c-pallet">Pallet</th><th class="c-code">C\u00f3digo</th><th class="c-desc">Descripci\u00f3n</th><th class="num c-stock">Stock</th><th class="num in">+ Entrada</th><th class="num out">\u2212 Salida</th><th class="num">Nuevo stock</th><th>Orden interno</th></tr></thead><tbody>${rows
+  target.innerHTML = `<table id="inventoryTable" class="inventory-grid"><thead><tr><th class="c-loc">Ubicaci\u00f3n</th><th class="c-pallet">Pallet</th><th class="c-store">Tienda</th><th class="c-code">C\u00f3digo</th><th class="c-desc">Descripci\u00f3n</th><th class="num c-stock">Stock</th><th class="num in">+ Entrada</th><th class="num out">\u2212 Salida</th><th class="num">Nuevo stock</th><th>Orden interno</th></tr></thead><tbody>${rows
     .map(({ pallet, item, key, loc }) => {
       const current = Number(item.quantity || 0),
         pending = inventoryPending.get(key),
         entry = Number(pending?.in || 0),
         exit = Number(pending?.out || 0),
         next = current + entry - exit;
-      return `<tr data-key="${escapeHtml(key)}" data-current="${current}" data-pallet="${escapeHtml(pallet.id)}" data-code="${escapeHtml(String(item.productCode || ''))}"><td class="c-loc">${escapeHtml(loc)}</td><td class="c-pallet">${escapeHtml(pallet.code)}</td><td class="c-code"><strong>${escapeHtml(item.productCode)}</strong></td><td class="desc c-desc">${escapeHtml(productDescription(item))}</td><td class="num c-stock" data-order="${current}">${current.toLocaleString()}</td><td class="cell" data-order="${entry}"><input type="number" min="0" step="1" inputmode="numeric" data-f="in" value="${pending?.in || ''}" aria-label="Entrada"></td><td class="cell" data-order="${exit}"><input type="number" min="0" step="1" inputmode="numeric" data-f="out" value="${pending?.out || ''}" aria-label="Salida"></td><td class="cell" data-order="${next}"><input type="number" min="0" step="1" inputmode="numeric" data-f="new" value="${next}" aria-label="Nuevo stock"></td><td>${escapeHtml(key)}</td></tr>`;
+      return `<tr data-key="${escapeHtml(key)}" data-current="${current}" data-pallet="${escapeHtml(pallet.id)}" data-code="${escapeHtml(String(item.productCode || ''))}"><td class="c-loc">${escapeHtml(loc)}</td><td class="c-pallet">${escapeHtml(pallet.code)}</td><td class="c-store">${escapeHtml(storeNameFor(pallet.storeId))}</td><td class="c-code"><strong>${escapeHtml(item.productCode)}</strong></td><td class="desc c-desc">${escapeHtml(productDescription(item))}</td><td class="num c-stock" data-order="${current}">${current.toLocaleString()}</td><td class="cell" data-order="${entry}"><input type="number" min="0" step="1" inputmode="numeric" data-f="in" value="${pending?.in || ''}" aria-label="Entrada"></td><td class="cell" data-order="${exit}"><input type="number" min="0" step="1" inputmode="numeric" data-f="out" value="${pending?.out || ''}" aria-label="Salida"></td><td class="cell" data-order="${next}"><input type="number" min="0" step="1" inputmode="numeric" data-f="new" value="${next}" aria-label="Nuevo stock"></td><td>${escapeHtml(key)}</td></tr>`;
     })
     .join('')}</tbody></table>`;
   target.querySelectorAll('tr[data-key]').forEach(markInventoryRow);
@@ -68,11 +68,11 @@ function renderInventory() {
       autoWidth: false,
       orderMulti: true ,
       order: previousOrder?.length ? previousOrder : [[0, 'asc']],
-      orderFixed: { post: [[8, 'asc']] },
+      orderFixed: { post: [[9, 'asc']] },
       columnDefs: [
-        { targets: [0, 1, 2, 3, 4, 5, 6, 7], orderable: true, orderSequence: ['asc', 'desc'] },
-        { targets: [4, 5, 6, 7], type: 'num' },
-        { targets: 8, visible: false, searchable: false },
+        { targets: [0, 1, 2, 3, 4, 5, 6, 7, 8], orderable: true, orderSequence: ['asc', 'desc'] },
+        { targets: [5, 6, 7, 8], type: 'num' },
+        { targets: 9, visible: false, searchable: false },
       ],
       layout: { topStart: null, topEnd: null, bottomStart: 'info', bottomEnd: 'paging' },
       language: {
@@ -92,11 +92,11 @@ function renderInventory() {
         updateInventorySummary();
       },
     });
-    inventoryDataTable.search.fixed('inventory-code-description', (_search, _data, index) => {
+    inventoryDataTable.search.fixed('inventory-store-code-description', (_search, _data, index) => {
       const query = normalizeInventoryFilter(($('inventorySearch')?.value || '').trim());
       if (!query) return true;
       const row = inventoryDataTable.row(index).node();
-      return [row?.cells[2]?.textContent, row?.cells[3]?.textContent]
+      return [row?.cells[2]?.textContent, row?.cells[3]?.textContent, row?.cells[4]?.textContent]
         .some((value) => normalizeInventoryFilter(value).includes(query));
     });
     inventoryDataTable.draw();
@@ -147,9 +147,9 @@ function onInventoryInput(event) {
   if (entry || exit)
     inventoryPending.set(tr.dataset.key, { palletId: tr.dataset.pallet, code: tr.dataset.code, in: entry, out: exit });
   else inventoryPending.delete(tr.dataset.key);
-  tr.cells[5].dataset.order = String(entry);
-  tr.cells[6].dataset.order = String(exit);
-  tr.cells[7].dataset.order = String(inventoryRowValues(tr).next);
+  tr.cells[6].dataset.order = String(entry);
+  tr.cells[7].dataset.order = String(exit);
+  tr.cells[8].dataset.order = String(inventoryRowValues(tr).next);
   inventoryDataTable?.row(tr).invalidate('dom');
   markInventoryRow(tr);
   updateInventorySummary();
@@ -342,9 +342,9 @@ async function saveInventoryChanges(auto = false) {
 
 function exportInventoryCsv() {
   const quote = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
-  const lines = [['Ubicacion', 'Pallet', 'Codigo', 'Descripcion', 'Stock'].map(quote).join(',')];
+  const lines = [['Ubicacion', 'Pallet', 'Tienda', 'Codigo', 'Descripcion', 'Stock'].map(quote).join(',')];
   for (const { pallet, item, loc } of visibleInventoryRows())
-    lines.push([loc, pallet.code, item.productCode, productDescription(item), Number(item.quantity || 0)].map(quote).join(','));
+    lines.push([loc, pallet.code, storeNameFor(pallet.storeId), item.productCode, productDescription(item), Number(item.quantity || 0)].map(quote).join(','));
   const url = URL.createObjectURL(new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' }));
   const link = document.createElement('a');
   link.href = url;
@@ -356,6 +356,7 @@ function exportInventoryCsv() {
 const INVENTORY_COLUMNS = [
   ['loc', 'Ubicación'],
   ['pallet', 'Pallet'],
+  ['store', 'Tienda'],
   ['code', 'Código'],
   ['desc', 'Descripción'],
   ['stock', 'Stock'],

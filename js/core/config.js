@@ -1,6 +1,6 @@
 /* Constantes de configuración y catálogo de módulos (pantallas). */
 const DB_NAME = 'almacenQRDB',
-  DB_VERSION = 1;
+  DB_VERSION = 2;
 
 const AUTH_DISABLED = !(
   window.ALMACEN_SUPABASE_CONFIG &&
@@ -8,7 +8,7 @@ const AUTH_DISABLED = !(
   window.ALMACEN_SUPABASE_CONFIG.anonKey
 );
 
-const sharedStores = ['racks', 'locations', 'pallets', 'moves'];
+const sharedStores = ['racks', 'locations', 'stores', 'pallets', 'moves'];
 
 const MODULES = [
   ['dashboard', 'Inicio'],

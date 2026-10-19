@@ -21,10 +21,20 @@ create table if not exists public.locations (
   "createdAt" timestamptz
 );
 
+create table if not exists public.stores (
+  id text primary key,
+  name text not null,
+  active boolean not null default true,
+  "createdAt" timestamptz not null default now(),
+  "updatedAt" timestamptz not null default now()
+);
+create unique index if not exists stores_name_case_insensitive_idx on public.stores (lower(name));
+
 create table if not exists public.pallets (
   id text primary key,
   code text not null unique,
   "locationId" text,
+  "storeId" text references public.stores(id) on delete restrict,
   description text not null,
   brand text,
   boxes integer not null default 0,
@@ -40,6 +50,43 @@ create table if not exists public.pallets (
 );
 
 alter table public.pallets add column if not exists products jsonb not null default '[]'::jsonb;
+alter table public.pallets add column if not exists "storeId" text references public.stores(id) on delete restrict;
+-- Importa tiendas de origen ya guardadas en las cajas de devolucion.
+insert into public.stores (id, name, active)
+select 'LEGACY-' || substr(md5(lower(trim(product ->> 'returnStore'))), 1, 20),
+  min(trim(product ->> 'returnStore')), true
+from public.pallets pallet
+cross join lateral jsonb_array_elements(
+  case when jsonb_typeof(pallet.products) = 'array' then pallet.products else '[]'::jsonb end
+) product
+where nullif(trim(product ->> 'returnStore'), '') is not null
+group by lower(trim(product ->> 'returnStore'))
+on conflict do nothing;
+
+update public.pallets pallet
+set "storeId" = store.id
+from public.stores store
+where pallet."storeId" is null
+  and exists (
+    select 1 from jsonb_array_elements(
+      case when jsonb_typeof(pallet.products) = 'array' then pallet.products else '[]'::jsonb end
+    ) product
+    where nullif(trim(product ->> 'returnStore'), '') is not null
+  )
+  and store.id = 'LEGACY-' || substr(md5(lower(trim((
+    select min(product ->> 'returnStore')
+    from jsonb_array_elements(
+      case when jsonb_typeof(pallet.products) = 'array' then pallet.products else '[]'::jsonb end
+    ) product
+    where nullif(trim(product ->> 'returnStore'), '') is not null
+  )))), 1, 20)
+  and 1 = (
+    select count(distinct lower(trim(product ->> 'returnStore')))
+    from jsonb_array_elements(
+      case when jsonb_typeof(pallet.products) = 'array' then pallet.products else '[]'::jsonb end
+    ) product
+    where nullif(trim(product ->> 'returnStore'), '') is not null
+  );
 alter table public.pallets add column if not exists created_by uuid;
 alter table public.pallets add column if not exists created_by_email text;
 alter table public.pallets add column if not exists updated_by uuid;
@@ -356,6 +403,7 @@ for each row execute function public.record_pallet_activity();
 
 alter table public.racks enable row level security;
 alter table public.locations enable row level security;
+alter table public.stores enable row level security;
 alter table public.pallets enable row level security;
 alter table public.moves enable row level security;
 alter table public.profiles enable row level security;
@@ -368,6 +416,8 @@ drop policy if exists "authenticated can read racks" on public.racks;
 drop policy if exists "admins manage racks" on public.racks;
 drop policy if exists "authenticated can read locations" on public.locations;
 drop policy if exists "admins manage locations" on public.locations;
+drop policy if exists "authenticated can read stores" on public.stores;
+drop policy if exists "admins manage stores" on public.stores;
 drop policy if exists "authenticated can read pallets" on public.pallets;
 drop policy if exists "authenticated can write pallets" on public.pallets;
 drop policy if exists "authenticated can update pallets" on public.pallets;
@@ -385,6 +435,12 @@ create policy "authenticated can read locations" on public.locations
 for select to authenticated using (public.has_module_access('dashboard') or public.has_module_access('search') or public.has_module_access('locations') or public.has_module_access('pallets') or public.has_module_access('scan') or public.has_module_access('moves'));
 create policy "admins manage locations" on public.locations
 for all to authenticated using (public.is_admin()) with check (public.is_admin());
+
+create policy "authenticated can read stores" on public.stores
+for select to authenticated using (public.is_admin() or public.can_create_pallet());
+create policy "admins manage stores" on public.stores
+for all to authenticated using (public.is_admin()) with check (public.is_admin());
+grant select, insert, update, delete on public.stores to authenticated;
 
 create policy "authenticated can read pallets" on public.pallets
 for select to authenticated using (public.has_module_access('dashboard') or public.has_module_access('search') or public.has_module_access('pallets') or public.has_module_access('scan'));
@@ -411,7 +467,7 @@ do $$
 declare
   table_name text;
 begin
-  foreach table_name in array array['racks', 'locations', 'pallets', 'moves', 'profiles']
+  foreach table_name in array array['racks', 'locations', 'stores', 'pallets', 'moves', 'profiles']
   loop
     if not exists (
       select 1

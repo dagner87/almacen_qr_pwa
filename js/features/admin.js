@@ -228,6 +228,7 @@ async function deleteSelectedStructure() {
 
 function renderAdminTools(refreshUsers = true) {
   if (currentProfile?.role !== 'admin') return;
+  renderStores();
   const rackMap = new Map(state.racks.map((rack) => [rack.code, rack]));
   state.locations.forEach((location) => {
     const code = locationRackCode(location);

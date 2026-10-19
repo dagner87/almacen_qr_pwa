@@ -7,7 +7,7 @@
 .columns-picker>summary::-webkit-details-marker{display:none}
 .columns-menu{position:absolute;z-index:30;top:calc(100% + 6px);left:0;min-width:190px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 14px;box-shadow:0 10px 30px #10251c26}
 .columns-menu .check-row{margin:8px 0;font-size:14px}
-.inventory-grid-wrap.hide-loc .c-loc,.inventory-grid-wrap.hide-pallet .c-pallet,.inventory-grid-wrap.hide-code .c-code,.inventory-grid-wrap.hide-desc .c-desc,.inventory-grid-wrap.hide-stock .c-stock{display:none}
+.inventory-grid-wrap.hide-loc .c-loc,.inventory-grid-wrap.hide-pallet .c-pallet,.inventory-grid-wrap.hide-store .c-store,.inventory-grid-wrap.hide-code .c-code,.inventory-grid-wrap.hide-desc .c-desc,.inventory-grid-wrap.hide-stock .c-stock{display:none}
 .inventory-grid-wrap { max-height: none; min-height: 220px; overflow: visible; border: 1px solid #c9d1dc; border-radius: 6px; background: #fff; }
 .inventory-grid-wrap .dt-layout-table { overflow-x: auto; }
 .inventory-grid-wrap .dt-layout-row { margin: 8px 0; }

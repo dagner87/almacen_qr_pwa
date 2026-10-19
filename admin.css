@@ -15,6 +15,9 @@
 .admin-level{padding:12px 0;border-top:1px solid var(--line);margin-top:10px}
 .admin-level.inactive{opacity:.7}
 .admin-positions{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.store-form{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:8px}
+.store-form label{margin:8px 0}
+.store-form .button-row{margin:8px 0}
 .admin-position{display:inline-flex;align-items:center;gap:5px;padding:5px 7px;background:white;border:1px solid var(--line);border-radius:8px;font-size:12px}
 .admin-position .mini{padding:2px 6px}
 .mini.danger{color:#9b2c20;background:#fff4f1;border-color:#f0d2cc}
@@ -27,4 +30,4 @@
 .user-permission-grid label{display:inline-flex;align-items:center;gap:5px;font-size:13px}
 .user-permission-grid input{width:16px;height:16px;accent-color:var(--green)}
 button:disabled{cursor:not-allowed;opacity:.52}
-@media(max-width:620px){.auth-gate{margin:5vh auto;padding:12px}.auth-panel{padding:18px}.topbar-actions{flex-wrap:wrap;justify-content:flex-end}.user-role-head{align-items:flex-start;flex-direction:column}.user-role-head select{min-width:100%}}
+@media(max-width:620px){.auth-gate{margin:5vh auto;padding:12px}.auth-panel{padding:18px}.topbar-actions{flex-wrap:wrap;justify-content:flex-end}.user-role-head{align-items:flex-start;flex-direction:column}.user-role-head select{min-width:100%}.store-form{grid-template-columns:1fr}.store-form .button-row{margin:0}}

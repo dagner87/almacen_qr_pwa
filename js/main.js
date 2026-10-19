@@ -184,6 +184,7 @@ async function init() {
   bindInventoryGrid();
   bindStockLimits();
   bindReturns();
+  bindStores();
 bindCatalog();
   $('productLookupInput').oninput = () => renderProductLookup();
   $('productLookupForm').onsubmit = (event) => {

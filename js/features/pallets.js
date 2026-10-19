@@ -30,7 +30,7 @@ function updateReturnBoxCount() {
 function readReturnProducts(old) {
   const lines = $('palletBulkCodes').value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean),
     existing = new Map(palletProducts(old).filter((item) => item.externalCode).map((item) => [String(item.productCode || '').trim().toLocaleUpperCase(), item])),
-    store = $('returnStoreName').value.trim(),
+    store = storeNameFor($('palletStoreId').value, ''),
     seen = new Set(),
     products = [];
   if (!lines.length) return { products, error: 'Pega al menos un código de caja.' };
@@ -97,6 +97,7 @@ function renderPallets() {
             p.description,
             p.brand,
             p.notes,
+            storeNameFor(p.storeId),
             ...palletProducts(p).flatMap((item) => [item.productCode, item.returnStore, productDescription(item)]),
           ]
             .join(' ')
@@ -111,12 +112,13 @@ function renderPallets() {
           const products = palletProducts(p),
             returnBoxes = products.filter((item) => item.externalCode).length,
             palletLocation = p.locationId ? escapeHtml(locLabel(p.locationId)) : '<span class="missing-location">Sin ubicación</span>',
+            owner = storeNameFor(p.storeId),
             detail = products.length && returnBoxes === products.length
               ? `${returnBoxes} cajas de retorno · ${palletLocation}`
               : products.length
                 ? `${products.length} productos · ${palletQuantity(p)} unidades · ${palletLocation}`
               : `${escapeHtml(p.brand || 'Sin marca')} · ${Number(p.boxes || 0)} cajas · ${palletLocation}`;
-          return `<article class="item"><div class="item-main"><div class="item-title">${escapeHtml(p.code)} · ${escapeHtml(p.description)}</div><div class="item-sub">${detail}</div><div class="item-sub">Creado: ${escapeHtml(formatDateTime(p.createdAt))} · ${movementCountFor(p.code)} movimiento(s)</div>${p.placed_by_email ? `<div class="item-sub">Ubicado por ${escapeHtml(p.placed_by_email)} · ${escapeHtml(formatDateTime(p.placed_at))}</div>` : ''}${products.length ? `<div class="product-summary">${products.map((item) => `<span>${escapeHtml(item.productCode)} × ${Number(item.quantity)}${item.externalCode ? ` · Retorno · ${escapeHtml(item.returnStore || 'Tienda sin indicar')}` : ''}</span>`).join('')}</div>` : ''}<span class="pill ${p.status === 'active' ? '' : 'warn'}">${p.status === 'active' ? 'Activo' : p.status === 'empty' ? 'Vacío' : 'Baja'}</span></div><div class="item-actions"><button class="mini" data-edit-pallet="${p.id}" data-write>Editar</button><button class="mini" data-qr-pallet="${p.id}">QR</button><button class="mini" data-move-pallet="${p.id}" data-write>Mover</button><button class="mini" data-delete-pallet="${p.id}" data-role="admin" data-write hidden>Eliminar</button></div></article>`;
+          return `<article class="item"><div class="item-main"><div class="item-title">${escapeHtml(p.code)} · ${escapeHtml(p.description)}</div><div class="item-sub">${detail}</div><div class="item-sub">Tienda propietaria: <b>${escapeHtml(owner)}</b></div><div class="item-sub">Creado: ${escapeHtml(formatDateTime(p.createdAt))} · ${movementCountFor(p.code)} movimiento(s)</div>${p.placed_by_email ? `<div class="item-sub">Ubicado por ${escapeHtml(p.placed_by_email)} · ${escapeHtml(formatDateTime(p.placed_at))}</div>` : ''}${products.length ? `<div class="product-summary">${products.map((item) => `<span>${escapeHtml(item.productCode)} × ${Number(item.quantity)}${item.externalCode ? ` · Retorno · ${escapeHtml(item.returnStore || 'Tienda sin indicar')}` : ''}</span>`).join('')}</div>` : ''}<span class="pill ${p.status === 'active' ? '' : 'warn'}">${p.status === 'active' ? 'Activo' : p.status === 'empty' ? 'Vacío' : 'Baja'}</span></div><div class="item-actions"><button class="mini" data-edit-pallet="${p.id}" data-write>Editar</button><button class="mini" data-qr-pallet="${p.id}">QR</button><button class="mini" data-move-pallet="${p.id}" data-write>Mover</button><button class="mini" data-delete-pallet="${p.id}" data-role="admin" data-write hidden>Eliminar</button></div></article>`;
         })
         .join('')
     : '<div class="empty">No hay pallets registrados.</div>';
@@ -130,13 +132,15 @@ function showPalletDialog(p = null, presetLocationId = '') {
   $('palletNotes').value = p?.notes || '';
   document.getElementById('externalProductCodes').checked = Boolean(p?.products?.length && p.products.every((item) => item.externalCode));
   document.getElementById('palletBulkCodes').value = '';
-  document.getElementById('returnStoreName').value = '';
   fillLocationOptions(p?.locationId || presetLocationId);
   const products = palletProducts(p);
+  const legacyReturnStores = [...new Set(products.map((item) => String(item.returnStore || '').trim()).filter(Boolean))],
+    inferredOwner = legacyReturnStores.length === 1
+      ? state.stores.find((store) => store.name.localeCompare(legacyReturnStores[0], 'es', { sensitivity: 'base' }) === 0)
+      : null;
+  fillPalletStoreOptions(p?.storeId || inferredOwner?.id || '');
   if (p?.products?.length && p.products.every((item) => item.externalCode)) {
     $('palletBulkCodes').value = products.map((item) => item.productCode).join('\n');
-    const stores = [...new Set(products.map((item) => item.returnStore).filter(Boolean))];
-    $('returnStoreName').value = stores.length === 1 ? stores[0] : '';
   }
   $('palletProductRows').innerHTML = productRowsMarkup(products.length ? products : [{}]);
   setExternalProductMode();
@@ -155,11 +159,18 @@ async function savePallet(event) {
   event.preventDefault();
   const id = $('palletId').value,
     old = state.pallets.find((item) => item.id === id),
-    selectedLocation = resolveLocationInput(true);
+    selectedLocation = resolveLocationInput(true),
+    storeId = $('palletStoreId').value,
+    selectedStore = storeById(storeId);
   if (id ? !canWrite() : !canWritePalletCreation()) return;
   const locationId = selectedLocation?.id || old?.locationId || null;
   if (locationId && !state.locations.some((location) => location.id === locationId)) {
     toast('La ubicación ya no existe. Actualiza el inventario e inténtalo nuevamente.');
+    return;
+  }
+  if (!selectedStore || (selectedStore.active === false && selectedStore.id !== old?.storeId)) {
+    toast('Selecciona una tienda activa para asignar la mercancía.');
+    $('palletStoreId').focus();
     return;
   }
   const isReturnMode = $('externalProductCodes').checked,
@@ -201,7 +212,9 @@ async function savePallet(event) {
       continue;
     }
     if (!canAccessModule('pallets')) continue;
-    const matches = findActiveProductMatches(product.productCode, old?.id);
+    const matches = findActiveProductMatches(product.productCode, old?.id).filter(
+      (match) => match.pallet.storeId === storeId,
+    );
     if (!matches.length) continue;
     const groups = new Map();
     for (const match of matches) {
@@ -253,6 +266,7 @@ async function savePallet(event) {
     id: old?.id || uid('PAL'),
     code,
     locationId,
+    storeId,
     description: products.length ? (isExternal ? 'Retorno de tienda' : 'Pallet mixto') : old?.description || 'Pallet vacío',
     brand: old?.brand || '',
     products,

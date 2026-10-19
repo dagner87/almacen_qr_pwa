@@ -84,6 +84,6 @@ function bindReturns() {
     showPalletDialog();
     $('externalProductCodes').checked = true;
     setExternalProductMode();
-    $('returnStoreName').focus();
+    $('palletStoreId').focus();
   };
 }

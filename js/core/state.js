@@ -14,4 +14,4 @@ let db,
 
 const $ = (id) => document.getElementById(id);
 
-const state = { racks: [], locations: [], pallets: [], moves: [], settings: {} };
+const state = { racks: [], locations: [], stores: [], pallets: [], moves: [], settings: {} };

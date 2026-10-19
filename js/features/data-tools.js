@@ -1,9 +1,10 @@
 /* Pantalla Datos / Sync: exportar e importar. */
 function exportInventoryCsv() {
   const rows = [
-    ['Pallet', 'Ubicación', 'Marca', 'Mercancía', 'Cajas', 'Productos (código:cantidad)', 'Estado', 'Actualizado'],
+    ['Pallet', 'Tienda propietaria', 'Ubicación', 'Marca', 'Mercancía', 'Cajas', 'Productos (código:cantidad)', 'Estado', 'Actualizado'],
     ...state.pallets.map((p) => [
       p.code,
+      storeNameFor(p.storeId),
       locLabel(p.locationId),
       p.brand,
       p.description,
@@ -24,6 +25,7 @@ async function exportBackup() {
     version: 2,
     exportedAt: now(),
     racks: await all('racks'),
+    stores: await all('stores'),
     locations: await all('locations'),
     pallets: await all('pallets'),
     moves: await all('moves'),
@@ -47,7 +49,7 @@ async function importBackup(file) {
   )
     return;
   try {
-    for (const store of ['racks', 'locations', 'pallets']) {
+    for (const store of ['racks', 'locations', 'stores', 'pallets']) {
       const rows = data[store] || [];
       if (!rows.length) continue;
       const { error } = await supabaseClient.from(store).upsert(rows);

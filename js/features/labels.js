@@ -151,6 +151,7 @@ function openQr(code, title, qrValue = code, extraHtml = '', printPagesHtml = ''
 
 function openPalletQr(p) {
   const products = palletProducts(p),
+    ownerStore = storeNameFor(p.storeId),
     isReturn = products.length > 0 && products.every((item) => item.externalCode),
     returnStores = [...new Set(products.map((item) => String(item.returnStore || '').trim()).filter(Boolean))],
     returnStoreLabel = returnStores.length === 1 ? returnStores[0] : returnStores.length ? 'Varias tiendas' : 'Tienda sin indicar',
@@ -158,9 +159,10 @@ function openPalletQr(p) {
       type: 'pallet',
       code: p.code,
       locationCode: locLabel(p.locationId),
+      storeName: storeNameFor(p.storeId, ''),
       ...(isReturn ? { returnCodes: products.map((item) => String(item.productCode || '')) } : {}),
     },
-    detail = `<p class="small qr-screen-only"><b>Ubicación:</b> ${escapeHtml(locLabel(p.locationId))} · <b>Total:</b> ${palletQuantity(p)} ${palletQuantityLabel(p)}</p><p class="qr-print-total">${isReturn ? `${products.length} cajas de retorno` : `${palletQuantity(p)} ${palletQuantityLabel(p)}`}</p>`,
+    detail = `<p class="small qr-screen-only"><b>Ubicación:</b> ${escapeHtml(locLabel(p.locationId))} · <b>Total:</b> ${palletQuantity(p)} ${palletQuantityLabel(p)}</p><p class="small qr-screen-only"><b>Tienda propietaria:</b> ${escapeHtml(ownerStore)}</p><p class="qr-print-store">Tienda propietaria: ${escapeHtml(ownerStore)}</p><p class="qr-print-total">${isReturn ? `${products.length} cajas de retorno` : `${palletQuantity(p)} ${palletQuantityLabel(p)}`}</p>`,
     codeGrid = products.length
       ? `<div class="qr-code-grid${products.length > 1 ? ' two-columns' : ''}">${products
           .map((item, index) => `<article class="qr-code-item"><span>${index + 1}</span><code>${escapeHtml(item.productCode || '')}</code><small>${escapeHtml(item.externalCode ? item.returnStore || 'Tienda sin indicar' : productDescription(item) || 'Producto')}</small><b>${item.externalCode ? '1 caja' : `Cantidad: ${Number(item.quantity || 0).toLocaleString()}`}</b></article>`)
