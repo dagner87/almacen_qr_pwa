@@ -12,18 +12,21 @@ function fillPalletStoreOptions(selectedId = $('palletStoreId')?.value || '') {
   if (!select) return;
   const selected = storeById(selectedId),
     options = [...state.stores]
-      .filter((store) => store.active !== false || store.id === selectedId)
+      .filter((store) => store.active !== false)
       .sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
   select.innerHTML = `<option value="">Selecciona una tienda</option>${options
-    .map((store) => `<option value="${escapeHtml(store.id)}">${escapeHtml(store.name)}${store.active === false ? ' (inactiva)' : ''}</option>`)
+    .map((store) => `<option value="${escapeHtml(store.id)}">${escapeHtml(store.name)}</option>`)
     .join('')}`;
-  select.value = selected ? selected.id : '';
+  select.value = selected && selected.active !== false ? selected.id : '';
   select.disabled = options.length === 0;
   const hint = $('palletStoreHint');
-  if (hint)
-    hint.textContent = options.length
-      ? 'La mercancía del pallet quedará asignada a esta tienda.'
-      : 'Primero registra una tienda en Administrar almacén.';
+  if (hint) {
+    hint.textContent = selected?.active === false
+      ? `Este pallet pertenece a ${selected.name}, que está inactiva. Selecciona una tienda activa para guardar cambios.`
+      : options.length
+        ? 'La mercancía del pallet quedará asignada a esta tienda.'
+        : 'Primero registra y activa una tienda en Administrar almacén.';
+  }
 }
 
 function renderStores() {

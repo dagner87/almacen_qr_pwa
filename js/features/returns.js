@@ -14,12 +14,20 @@ function returnPalletRows() {
   return rows;
 }
 
+function isInactiveStoreName(name) {
+  return state.stores.some(
+    (store) => store.active === false && store.name.localeCompare(name, 'es', { sensitivity: 'base' }) === 0,
+  );
+}
+
 function renderReturns() {
   const target = $('returnsList');
   if (!target) return;
   const allRows = returnPalletRows(),
     activeRows = allRows.filter(({ pallet }) => pallet.status === 'active'),
-    stores = [...new Set(allRows.map((row) => row.store))].sort((a, b) => a.localeCompare(b, 'es')),
+    stores = [...new Set(allRows.map((row) => row.store))]
+      .filter((store) => !isInactiveStoreName(store))
+      .sort((a, b) => a.localeCompare(b, 'es')),
     storeFilter = $('returnsStoreFilter'),
     selectedStore = storeFilter.value;
 

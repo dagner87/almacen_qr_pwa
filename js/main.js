@@ -125,6 +125,30 @@ async function init() {
   document
     .querySelectorAll('[data-view]')
     .forEach((button) => button.addEventListener('click', () => showView(button.dataset.view)));
+  const settingsTabs = [...document.querySelectorAll('[data-settings-tab]')];
+  const activateSettingsTab = (tab, focus = false) => {
+    settingsTabs.forEach((item) => {
+      const active = item === tab,
+        panel = $(item.dataset.settingsTab);
+      item.setAttribute('aria-selected', String(active));
+      item.tabIndex = active ? 0 : -1;
+      if (panel) panel.hidden = !active;
+    });
+    if (focus) tab.focus();
+  };
+  settingsTabs.forEach((tab, index) => {
+    tab.addEventListener('click', () => activateSettingsTab(tab));
+    tab.addEventListener('keydown', (event) => {
+      let nextIndex = index;
+      if (event.key === 'ArrowRight') nextIndex = (index + 1) % settingsTabs.length;
+      else if (event.key === 'ArrowLeft') nextIndex = (index - 1 + settingsTabs.length) % settingsTabs.length;
+      else if (event.key === 'Home') nextIndex = 0;
+      else if (event.key === 'End') nextIndex = settingsTabs.length - 1;
+      else return;
+      event.preventDefault();
+      activateSettingsTab(settingsTabs[nextIndex], true);
+    });
+  });
   document
     .querySelectorAll('[data-goto]')
     .forEach((button) => button.addEventListener('click', () => showView(button.dataset.goto)));

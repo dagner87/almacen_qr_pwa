@@ -29,9 +29,11 @@ function fillInventoryStoreOptions() {
   const select = $('inventoryStoreFilter');
   if (!select) return;
   const selected = select.value,
-    stores = [...state.stores].sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
+    stores = [...state.stores]
+      .filter((store) => store.active !== false)
+      .sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
   select.innerHTML = `<option value="">Todas las tiendas</option>${stores
-    .map((store) => `<option value="${escapeHtml(store.id)}">${escapeHtml(store.name)}${store.active === false ? ' (inactiva)' : ''}</option>`)
+    .map((store) => `<option value="${escapeHtml(store.id)}">${escapeHtml(store.name)}</option>`)
     .join('')}`;
   select.value = stores.some((store) => store.id === selected) ? selected : '';
   lastInventoryStoreFilter = select.value;

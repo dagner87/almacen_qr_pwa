@@ -18,6 +18,12 @@
 .store-form{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:8px}
 .store-form label{margin:8px 0}
 .store-form .button-row{margin:8px 0}
+.settings-tabs{display:flex;gap:6px;overflow-x:auto;padding:5px;margin:8px 0 14px;background:#e9eeea;border:1px solid var(--line);border-radius:12px}
+.settings-tab{flex:0 0 auto;border:0;border-radius:8px;padding:10px 14px;background:transparent;color:#3d4c45;font-weight:700;white-space:nowrap}
+.settings-tab[aria-selected="true"]{background:var(--green);color:#fff}
+.settings-panel[hidden]{display:none}
+.settings-panel>.panel:first-child{margin-top:0}
+.settings-panel label{max-width:620px}
 .admin-position{display:inline-flex;align-items:center;gap:5px;padding:5px 7px;background:white;border:1px solid var(--line);border-radius:8px;font-size:12px}
 .admin-position .mini{padding:2px 6px}
 .mini.danger{color:#9b2c20;background:#fff4f1;border-color:#f0d2cc}
